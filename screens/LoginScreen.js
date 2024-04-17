@@ -28,18 +28,20 @@ const LoginScreen = ({navigation}) => {
     }, []);
 
     const handleLogin = () => {
-        setEmailError(email === '');
-        setPasswordError(password === '');
         
         if (email !== '' && password !== '') {
             signInWithEmailAndPassword(auth, email, password)
             .then((userCredential) => {
-                // Signed in 
+                setEmailError(false);
+                setPasswordError(false);
+                // Signed i
                 const user = userCredential.user;
                 console.log('user login: ', user.email);
                 navigation.navigate('Username', {user: user});                // ...
             })
             .catch((error) => {
+                setEmailError(true);
+                setPasswordError(true);
                 const errorCode = error.code;
                 const errorMessage = error.message;
             });

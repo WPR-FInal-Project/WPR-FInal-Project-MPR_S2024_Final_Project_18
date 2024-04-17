@@ -11,7 +11,7 @@ const UserNameEnter = ({navigation, route}) => {
     const docRef = doc(db, "users", uid);
     const [loading, setLoading] = useState(true);
     const [username, setUsername] = useState(user.username);
-
+    const [gender, setGender] = useState("male");
     useEffect(() => {
         const fetchData = async () => {
           const user = await getUser();
@@ -28,7 +28,7 @@ const UserNameEnter = ({navigation, route}) => {
     const handleUsernameSubmit = async () => {
         if (username !== '') {
             try {
-                await setDoc(doc(db, 'users', uid), { username }, { merge: true });
+                await setDoc(doc(db, 'users', uid), { username, gender }, { merge: true });
                 const user = await getUser();
                 navigation.navigate('Home', { user: user });
             } catch (error) {
@@ -51,7 +51,7 @@ const UserNameEnter = ({navigation, route}) => {
     return (
         (loading ? (
 
-            <Text>Loading...</Text>
+            <View></View>
         ) : (<View style={styles.container}>
             <Text style={styles.title}>Enter your username</Text>
             <TextInput
@@ -60,6 +60,16 @@ const UserNameEnter = ({navigation, route}) => {
                 value={username}
                 placeholder="Username"
             />
+            {/* <Picker
+                selectedValue={gender}
+                onValueChange={(itemValue) => setGender(itemValue)}
+                style={styles.inputGender}
+            >
+                <Picker.Item label="Male" value="male" />
+                <Picker.Item label="Female" value="female" />
+                <Picker.Item label="Other" value="other" />
+            </Picker> */}
+
             <Button title="Submit" onPress={handleUsernameSubmit} />    
         </View>))
     );
@@ -82,6 +92,12 @@ const styles = StyleSheet.create({
         marginBottom: 16,
         paddingLeft: 8,
     },
+    inputGender: {
+        height: 40,
+        borderColor: 'gray',
+        borderWidth: 1,
+        marginBottom: 16,
+    }
 });
 
 export default UserNameEnter;
