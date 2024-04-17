@@ -46,7 +46,14 @@ const RegisterScreen = ({navigation}) => {
             uid: user.uid,
             email: user.email,
             username: '',
+            gender: "",
+            balance: 0,
+            daily_login_streak: 0,
             age: 0,
+            skills: [],
+            jobs: "",
+            health: 100,
+            happiness: 100,
             // add other user properties here
           });
           console.log("User stored successfully");

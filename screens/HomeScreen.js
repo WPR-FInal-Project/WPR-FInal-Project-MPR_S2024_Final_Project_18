@@ -55,10 +55,25 @@ const HomeScreen = ({ navigation, route }) => {
               <Text>UID: {currentUser.uid}</Text>
               <Text>name: {currentUser.username}</Text>
               <Text>age: {currentUser.age}</Text>
-
+              <Text>balance: {currentUser.balance}</Text>
+              <Text>daily_login_streak: {currentUser.daily_login_streak}</Text>
+              <Text>gender: {currentUser.gender}</Text>
+              <Text>health: {currentUser.health}/100</Text>
+              <Text>jobs: {currentUser.jobs}</Text>
+              <Text>skills: {currentUser.skills}</Text>
+              <Text>happiness: {currentUser.happiness}/100</Text>
               <Pressable onPress={signOut}>
                 <Text>Sign Out</Text>
               </Pressable>
+
+              <View style={{flexDirection: 'row', alignItems: 'center', justifyContent: 'center'}}>
+                <View style={{backgroundColor: 'blue'}}></View>
+                <View style={{flexDirection: 'column', backgroundColor: 'blue'}}>
+                  <View></View>
+                  <View></View>
+                </View>
+                <View style={{backgroundColor: 'blue'}}></View>
+              </View>
             </>
           )}
         </View>
