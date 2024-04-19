@@ -1,21 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, Pressable, Platform, ImageBackground} from 'react-native';
 import { auth } from '../config/firebase';
-import { doc, getDoc, getDocFromCache  } from "firebase/firestore";
+import { doc, getDoc } from "firebase/firestore";
 import { db } from '../config/firebase';
 import AppLoading from 'expo-app-loading';
 import { useFonts, Itim_400Regular } from '@expo-google-fonts/itim';
 import * as Progress from 'react-native-progress';
+
 const image = (require('../assets/images/home-bg.png'));
 
 const HomeScreen = ({ navigation, route }) => {
   let [fontsLoaded] = useFonts({
     Itim_400Regular,
   });
-
-  let fontSize = 24;
-  let paddingVertical = 6;
-
     let user = route.params.user;
     const uid = user.uid
     const docRef = doc(db, "users", uid);
@@ -69,8 +66,6 @@ const HomeScreen = ({ navigation, route }) => {
           console.error('Sign Out Error', error);
         });
     };
-
-    
       
     if (!fontsLoaded) {
       return <AppLoading />;
@@ -103,19 +98,51 @@ const HomeScreen = ({ navigation, route }) => {
               <Text>jobs: {currentUser.jobs}</Text>
               <Text>skills: {currentUser.skills}</Text>
               <Text>happiness: {currentUser.happiness}/100</Text>
-              */}
+              
 
               <Pressable onPress={signOut}>
                 <Text>Sign Out</Text>
               </Pressable>
+              */}
 
-              <View style={{flexDirection: 'row', alignItems: 'center', justifyContent: 'center'}}>
-                <View style={{backgroundColor: 'blue'}}></View>
-                <View style={{flexDirection: 'column', backgroundColor: 'blue'}}>
-                  <View></View>
-                  <View></View>
+              <View style={styles.buildingContainer}>
+                <View style={styles.building}>
+                  <Pressable onPress={() => navigation.navigate('Restaurant')}
+                  style={{height: "100%", width: 200, alignSelf: 'flex-end'}} />
                 </View>
-                <View style={{backgroundColor: 'blue'}}></View>
+                <View style={styles.building}>
+                <Pressable onPress={() => navigation.navigate('School')}
+                  style={{height: "100%", width: 180}} />
+                </View>
+                <View style={styles.building}>
+                <Pressable onPress={() => navigation.navigate('Work')}
+                  style={{height: "100%", width: 200, alignSelf: 'flex-end'}} />
+                </View>
+                <View style={styles.building}>
+                <Pressable onPress={() => navigation.navigate('RentalHouse')}
+                  style={{height: "100%", width: 180}} />
+                </View>
+              </View>
+
+              <View style={styles.BottomButtonsContainer}>
+              <View style={styles.BottomButtons}>
+                  <View style={styles.buttonWrapper}>
+                    <Pressable style={styles.button}></Pressable>
+                  </View>
+                </View>
+                <View style={styles.BottomButtons}>
+                  <View style={styles.buttonWrapper}>
+                    <Pressable style={styles.button}>
+                      
+                    </Pressable>
+                  </View>
+                </View>
+                <View style={styles.BottomButtons}>
+                  <View style={styles.buttonWrapper}>
+                    <Pressable style={styles.button}></Pressable>
+                  </View>
+                </View>
+                
               </View>
             </>
           )}
@@ -168,7 +195,58 @@ const styles = StyleSheet.create({
       borderBottomLeftRadius: 7, 
       borderBottomRightRadius: 7,
       borderBottomColor: 'none',
+    },
+    buildingContainer: {
+      display: 'flex',
+      height: "65%",
+      width: '100%',
+      flexDirection: 'column',
       
+    },
+    building: {
+      height: "25%",
+      width: '100%',
+    },
+    BottomButtonsContainer: {
+      flex: 1,
+      width: '100%',
+      flexDirection: 'row',
+      paddingBottom: 20
+    },
+    BottomButtons: {
+      height: 80,
+      
+      width: '33.33%',
+      alignSelf: 'flex-end',
+      alignItems: 'center',
+      justifyContent: 'flex-end',
+      shadowColor: "#000",
+            shadowOffset: {
+                width: 0,
+                height: 6,
+            },
+            shadowOpacity: 0.27,
+            shadowRadius: 4.65,
+            elevation: 40,
+            zIndex:999,
+    },
+    button:{ 
+      backgroundColor: '#F14C01',
+      height: 50,
+      width: 110,
+      borderRadius: 10,
+      height: '85%', 
+      borderBottomColor: '#FFE472', 
+      borderBottomWidth: 2, 
+      backgroundColor: '#F58D34'
+    },
+    buttonWrapper: {
+      height: '90%', 
+      backgroundColor: '#C54319', 
+      borderRadius: 10, 
+      alignItems: 'flex-start',
+       borderColor: '#692600', 
+      borderWidth: 2
     }
 });
 export default HomeScreen;
