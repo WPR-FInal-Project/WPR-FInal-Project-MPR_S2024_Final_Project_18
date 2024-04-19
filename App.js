@@ -8,7 +8,10 @@ import HomeScreen from './screens/HomeScreen';
 import LoginScreen from './screens/LoginScreen';
 import RegisterScreen from './screens/RegisterScreen';
 import UserNameEnter from './screens/UserNameEnter';
-
+import RentalHouseScreen from './screens/RentalHouseScreen';
+import SchoolScreen from './screens/SchoolScreen';
+import WorkScreen from './screens/WorkScreen';
+import RestaurantScreen from './screens/RestaurantScreen';
 const Stack = createNativeStackNavigator();
 
 const App = () => {
@@ -19,6 +22,10 @@ const App = () => {
               <Stack.Screen name="Login" options={{headerShown: false}} component={LoginScreen} />
               <Stack.Screen name="Register" options={{headerShown: false}} component={RegisterScreen} />
               <Stack.Screen name="Username" options={{headerShown: false}} component={UserNameEnter} />
+              <Stack.Screen name="School" options={{headerShown: false}} component={SchoolScreen} />
+              <Stack.Screen name="RentalHouse" options={{headerShown: false}} component={RentalHouseScreen} />
+              <Stack.Screen name="Work" options={{headerShown: false}} component={WorkScreen} />
+              <Stack.Screen name="Restaurant" options={{headerShown: false}} component={RestaurantScreen} />
 
           </Stack.Navigator>
       </NavigationContainer>
