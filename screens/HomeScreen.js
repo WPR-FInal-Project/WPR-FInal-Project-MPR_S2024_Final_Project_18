@@ -6,7 +6,11 @@ import { db } from '../config/firebase';
 import AppLoading from 'expo-app-loading';
 import { useFonts, Itim_400Regular } from '@expo-google-fonts/itim';
 import * as Progress from 'react-native-progress';
-
+import FontAwesome from 'react-native-vector-icons/FontAwesome';
+import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import Modal from "react-native-modal";
+import UpperBar from '../components/UpperBar';
 const image = (require('../assets/images/home-bg.png'));
 
 const HomeScreen = ({ navigation, route }) => {
@@ -19,6 +23,11 @@ const HomeScreen = ({ navigation, route }) => {
     const [loading, setLoading] = useState(true);
     const [currentUser, setCurrentUser] = useState();
     const [progress, setProgress] = useState(0);
+    const [userModalVisible, setUserModalVisible] = useState(false);
+
+    const toggleUserModal = () => {
+      setUserModalVisible(!userModalVisible);
+    };
 
     useEffect(() => {
         const fetchData = async () => {
@@ -76,8 +85,60 @@ const HomeScreen = ({ navigation, route }) => {
             <Text>Loading...</Text>
           ) : (
             <>
+            <Modal isVisible={userModalVisible} style={styles.modalContainer}>
+              <View style={styles.userModal}>
+                <View style={[, {flex: 1}]}>
+              <Text style={{fontFamily: 'Itim_400Regular', fontSize: 35, color: 'white', fontWeight: '600'}}>User Information</Text>
+                <Text>UID: {currentUser.uid}</Text>
+              <Text>name: {currentUser.username}</Text>
+              <Text>age: {currentUser.age}</Text>
+              <Text>balance: {currentUser.balance}</Text>
+              <Text>gender: {currentUser.gender}</Text>
+              <Text>jobs: {currentUser.jobs}</Text>
+              <Text>skills: {currentUser.skills}</Text>
+                </View>
+
+                <View style={{flexDirection: 'row', width: '100%', justifyContent:'center', marginBottom: 25}}>
+                  <View style={[styles.BottomButtons, {alignSelf: 'center'}]}>
+                    <View style={[styles.buttonWrapper, { marginRight: 30}]}>
+                      <Pressable style={styles.button} onPress={() => {toggleUserModal()}}>
+                        <Text style={{color: 'white', fontSize: 30, fontFamily: 'Itim_400Regular'}}>Close</Text>
+                      </Pressable>
+                    </View>
+                  </View>
+                  <View style={[styles.BottomButtons, {alignSelf: 'center'}]}>
+                    <View style={[styles.buttonWrapper, {marginLeft: 30}]}>
+                      <Pressable style={styles.button} onPress={signOut}>
+                        <Text style={{color: 'white', fontSize: 30, fontFamily: 'Itim_400Regular'}}>Log out</Text>
+                      </Pressable>
+                    </View>
+                  </View>
+                </View>
+              
+              </View>
+            </Modal> 
             <View style={styles.headerContainer}>
-              <View style={{flex: 1}}></View>
+              
+                <View style={styles.infomationContainer}>
+                  <View style={styles.balanceContainer}>
+                  <UpperBar/>
+                   <FontAwesome5 name="coins" size={35} color="yellow" style={styles.icons}/>     
+                   <Text style={{fontFamily: 'Itim_400Regular', fontSize: 23, color: 'white', fontWeight: '600'}}>{currentUser.balance}</Text>
+                  </View>
+                  
+                  <View style={styles.healthContainer}>
+                  <UpperBar/>
+                    <MaterialCommunityIcons name="heart-multiple" size={35} color="#F73653" style={styles.icons}/>     
+                    <Text style={{fontFamily: 'Itim_400Regular', fontSize: 23, color: 'white', fontWeight: '600'}}>{currentUser.health}</Text>
+                  </View>
+
+                  <View style={styles.happinessContainer}>
+                  <UpperBar/>
+                    <MaterialCommunityIcons name="emoticon-happy" size={35} color="yellow" style={styles.icons}/>     
+                    <Text style={{fontFamily: 'Itim_400Regular', fontSize: 23, color: 'white', fontWeight: '600'}}>{currentUser.happiness}</Text>
+                  </View>
+                </View>
+
               <View style={styles.headerBottomBar}></View>
             </View>
             <View style={styles.progressBarContainer}>
@@ -87,53 +148,49 @@ const HomeScreen = ({ navigation, route }) => {
               </View>
             </View>
 
-            {/*  <Text>Welcome {currentUser.email}</Text>
-              <Text>UID: {currentUser.uid}</Text>
-              <Text>name: {currentUser.username}</Text>
-              <Text>age: {currentUser.age}</Text>
-              <Text>balance: {currentUser.balance}</Text>
-              <Text>daily_login_streak: {currentUser.daily_login_streak}</Text>
-              <Text>gender: {currentUser.gender}</Text>
-              <Text>health: {currentUser.health}/100</Text>
-              <Text>jobs: {currentUser.jobs}</Text>
-              <Text>skills: {currentUser.skills}</Text>
-              <Text>happiness: {currentUser.happiness}/100</Text>
+            {/*  
               
-
-              <Pressable onPress={signOut}>
-                <Text>Sign Out</Text>
-              </Pressable>
+              <Text>daily_login_streak: {currentUser.daily_login_streak}</Text>
+              
               */}
 
               <View style={styles.buildingContainer}>
+
                 <View style={styles.building}>
                   <Pressable onPress={() => navigation.navigate('Restaurant')}
                   style={{height: "100%", width: 200, alignSelf: 'flex-end'}} />
                 </View>
+
                 <View style={styles.building}>
                 <Pressable onPress={() => navigation.navigate('School')}
                   style={{height: "100%", width: 180}} />
                 </View>
+
                 <View style={styles.building}>
-                <Pressable onPress={() => navigation.navigate('Work')}
-                  style={{height: "100%", width: 200, alignSelf: 'flex-end'}} />
+                  <Pressable onPress={() => navigation.navigate('RentalHouse')}
+                    style={{height: "100%", width: 180}} />
+
+                  <Pressable onPress={() => navigation.navigate('Work')}
+                    style={{height: "100%", width: 200, alignSelf: 'flex-end', marginLeft: 20}} />
                 </View>
+
                 <View style={styles.building}>
+                  
                 <Pressable onPress={() => navigation.navigate('RentalHouse')}
                   style={{height: "100%", width: 180}} />
                 </View>
               </View>
 
               <View style={styles.BottomButtonsContainer}>
-              <View style={styles.BottomButtons}>
+                <View style={styles.BottomButtons}>
                   <View style={styles.buttonWrapper}>
                     <Pressable style={styles.button}></Pressable>
                   </View>
                 </View>
                 <View style={styles.BottomButtons}>
                   <View style={styles.buttonWrapper}>
-                    <Pressable style={styles.button}>
-                      
+                    <Pressable style={styles.button} onPress={toggleUserModal}>
+                      <FontAwesome name="user-circle-o" size={40} color="white" />
                     </Pressable>
                   </View>
                 </View>
@@ -160,11 +217,62 @@ const styles = StyleSheet.create({
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
-      height: 100,
+      height: 110,
       width: '100%',
       flexDirection: 'column',
       backgroundColor: '#7D5E46',
       
+    },
+    infomationContainer: {
+      flex: 1,
+      flexDirection: 'row',
+      width: '100%',
+      marginTop: 50,
+      paddingLeft: 10,
+      justifyContent: 'center',
+    },
+    icons: {
+      position: 'absolute',
+      left: -14,
+      
+    },
+    balanceContainer:{
+      width: 100,
+      height: 40,
+      flexDirection: 'column',
+      alignItems: 'center',
+      backgroundColor: '#5C3933',
+      borderRadius: 10,
+      borderColor: '#331101',
+      borderWidth: 2,
+      borderBottomLeftRadius: 20,
+      borderBottomRightRadius: 20,
+    },
+    healthContainer:{
+      width: 100,
+      height: 40,
+      marginHorizontal: 25,
+      flexDirection: 'column',
+      alignItems: 'center',
+      backgroundColor: '#5C3933',
+      borderRadius: 10,
+      borderColor: '#331101',
+      borderWidth: 2,
+      borderBottomLeftRadius: 20,
+      borderBottomRightRadius: 20,
+    },
+    happinessContainer:{
+      
+      width: 100,
+      height: 40,
+      flexDirection: 'column',
+      alignItems: 'center',
+      backgroundColor: '#5C3933',
+      borderRadius: 10,
+      borderBottomLeftRadius: 20,
+      borderBottomRightRadius: 20,
+      borderColor: '#331101',
+      borderWidth: 2,
     },
     headerBottomBar: {
       backgroundColor: '#362505', 
@@ -206,6 +314,8 @@ const styles = StyleSheet.create({
     building: {
       height: "25%",
       width: '100%',
+     
+      flexDirection: 'row',
     },
     BottomButtonsContainer: {
       flex: 1,
@@ -238,6 +348,8 @@ const styles = StyleSheet.create({
       height: '85%', 
       borderBottomColor: '#FFE472', 
       borderBottomWidth: 2, 
+      alignItems: 'center',
+      justifyContent: 'center',
       backgroundColor: '#F58D34'
     },
     buttonWrapper: {
@@ -247,6 +359,24 @@ const styles = StyleSheet.create({
       alignItems: 'flex-start',
        borderColor: '#692600', 
       borderWidth: 2
+    },
+    modalContainer: {
+      justifyContent: 'center',
+      alignItems: 'center'
+    },
+    userModal: {
+      display: 'flex',
+      alignItems: 'center',
+      flexDirection: 'column',
+      backgroundColor: '#F1B564',
+      borderRadius: 10,
+      borderColor: '#692600',
+      
+      borderWidth: 5,
+      borderRadius: 10,
+      width: '90%',
+      height: '70%',
+      padding: 6,
     }
 });
 export default HomeScreen;
