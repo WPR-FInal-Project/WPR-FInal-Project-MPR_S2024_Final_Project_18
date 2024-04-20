@@ -11,6 +11,8 @@ import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import Modal from "react-native-modal";
 import UpperBar from '../components/UpperBar';
+import UserInfo from '../components/UserInfo';
+import { set } from 'firebase/database';
 const image = (require('../assets/images/home-bg.png'));
 
 const HomeScreen = ({ navigation, route }) => {
@@ -19,9 +21,11 @@ const HomeScreen = ({ navigation, route }) => {
   });
     let user = route.params.user;
     const uid = user.uid
-    const docRef = doc(db, "users", uid);
+    const usersDocRef = doc(db, "users", uid);
+
     const [loading, setLoading] = useState(true);
     const [currentUser, setCurrentUser] = useState();
+    const [skills, setSkills] = useState([]);
     const [progress, setProgress] = useState(0);
     const [userModalVisible, setUserModalVisible] = useState(false);
 
@@ -32,6 +36,8 @@ const HomeScreen = ({ navigation, route }) => {
     useEffect(() => {
         const fetchData = async () => {
           const user = await getUser();
+          setSkills(user.skills);
+          console.log(skills);
           setCurrentUser(user);
           setLoading(false);
           }
@@ -56,7 +62,7 @@ const HomeScreen = ({ navigation, route }) => {
     }, []);
 
     async function getUser() {
-      const docSnap = await getDoc(docRef)
+      const docSnap = await getDoc(usersDocRef)
       
       if (docSnap.exists()) {
         console.log("Document data:", docSnap.data());
@@ -65,7 +71,8 @@ const HomeScreen = ({ navigation, route }) => {
         // docSnap.data() will be undefined in this case
         console.log("No such document!");
       }
-      }
+    }
+    
 
     const signOut = () => {
         auth.signOut().then(() => {
@@ -88,14 +95,8 @@ const HomeScreen = ({ navigation, route }) => {
             <Modal isVisible={userModalVisible} style={styles.modalContainer}>
               <View style={styles.userModal}>
                 <View style={[, {flex: 1}]}>
-              <Text style={{fontFamily: 'Itim_400Regular', fontSize: 35, color: 'white', fontWeight: '600'}}>User Information</Text>
-                <Text>UID: {currentUser.uid}</Text>
-              <Text>name: {currentUser.username}</Text>
-              <Text>age: {currentUser.age}</Text>
-              <Text>balance: {currentUser.balance}</Text>
-              <Text>gender: {currentUser.gender}</Text>
-              <Text>jobs: {currentUser.jobs}</Text>
-              <Text>skills: {currentUser.skills}</Text>
+                  <Text style={{fontFamily: 'Itim_400Regular', fontSize: 35, color: 'white', fontWeight: '600'}}>User Information</Text>    
+                  <UserInfo userInfo={currentUser}/>
                 </View>
 
                 <View style={{flexDirection: 'row', width: '100%', justifyContent:'center', marginBottom: 25}}>
@@ -157,8 +158,10 @@ const HomeScreen = ({ navigation, route }) => {
               <View style={styles.buildingContainer}>
 
                 <View style={styles.building}>
-                  <Pressable onPress={() => navigation.navigate('Restaurant')}
-                  style={{height: "100%", width: 200, alignSelf: 'flex-end'}} />
+                
+                <Pressable onPress={() => navigation.navigate('Restaurant')}
+                  style={{height: "100%", width: 200, alignSelf: 'flex-end', marginLeft: 200}} />
+                
                 </View>
 
                 <View style={styles.building}>
@@ -314,7 +317,7 @@ const styles = StyleSheet.create({
     building: {
       height: "25%",
       width: '100%',
-     
+      display: 'flex',
       flexDirection: 'row',
     },
     BottomButtonsContainer: {
