@@ -37,7 +37,7 @@ const LoginScreen = ({navigation}) => {
                 // Signed i
                 const user = userCredential.user;
                 console.log('user login: ', user.email);
-                navigation.navigate('Username', {user: user});                // ...
+                navigation.navigate('Username', {uid: user.uid, username: user.username});                // ...
             })
             .catch((error) => {
                 setEmailError(true);

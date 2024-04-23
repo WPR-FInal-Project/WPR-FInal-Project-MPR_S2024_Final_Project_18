@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, Pressable, Platform, ImageBackground} from 'react-native';
 import { auth } from '../config/firebase';
-import { doc, getDoc } from "firebase/firestore";
+import { doc, getDoc, collection, query, where, getDocs, setDoc, updateDoc } from "firebase/firestore";
 import { db } from '../config/firebase';
-import AppLoading from 'expo-app-loading';
 import { useFonts, Itim_400Regular } from '@expo-google-fonts/itim';
 import * as Progress from 'react-native-progress';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
@@ -11,19 +10,23 @@ import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import Modal from "react-native-modal";
 import UpperBar from '../components/UpperBar';
+import UserInfo from '../components/UserInfo';
 const image = (require('../assets/images/home-bg.png'));
 
 const HomeScreen = ({ navigation, route }) => {
   let [fontsLoaded] = useFonts({
     Itim_400Regular,
   });
-    let user = route.params.user;
-    const uid = user.uid
-    const docRef = doc(db, "users", uid);
+    
+    const uid = route.params.uid
+    const usersDocRef = doc(db, "users", uid);
     const [loading, setLoading] = useState(true);
-    const [currentUser, setCurrentUser] = useState();
+    const [currentUser, setCurrentUser] = useState({});
+    const [skills, setSkills] = useState([]);
     const [progress, setProgress] = useState(0);
     const [userModalVisible, setUserModalVisible] = useState(false);
+    const [age, setAge] = useState(0);
+
 
     const toggleUserModal = () => {
       setUserModalVisible(!userModalVisible);
@@ -31,42 +34,83 @@ const HomeScreen = ({ navigation, route }) => {
 
     useEffect(() => {
         const fetchData = async () => {
+          setSkills([]);
           const user = await getUser();
           setCurrentUser(user);
+          setAge(user.age);
           setLoading(false);
-          }
+        }
         fetchData();
-    }, []);
+    }, [age]);
 
     useEffect(() => {
-      const duration = 12 * 60 * 1000; // 12 minutes in milliseconds
+      const duration =  12 * 60 * 1000; // 1 minute in milliseconds
       const intervalTime = 100; // Update frequency in milliseconds
       const steps = duration / intervalTime; // Total number of steps
       let step = 0; // Current step
     
-      const interval = setInterval(() => {
+      const interval = setInterval(async () => {
         step++;
         if (step >= steps) {
           step = 0; // Reset step to 0 when it reaches the total steps
+          try {
+            setAge(prevAge => {
+              const newAge = prevAge + 1;
+              updateDoc(doc(db, 'users', uid), { age: newAge });
+              console.log('age updated: ' + newAge);
+              return newAge;
+            });
+
+          } catch (error) {
+            console.error("Error updating username: ", error);
+          }
         }
-        setProgress((step / steps).toFixed(2)); // Calculate progress percentage
+        setProgress(step / steps); // Calculate progress percentage
       }, intervalTime);
     
       return () => clearInterval(interval);
     }, []);
 
+    useEffect(() => {
+      const fetchData = async () => {
+        if (currentUser && currentUser.skills) { // Check if currentUser and skills exist
+        
+        const newSkills = await Promise.all(currentUser.skills.map(getSkill));
+        const filteredNewSkills = newSkills.filter(skill => {
+          return !skills.some(existingSkill => existingSkill.id === skill.id);
+        });
+        setSkills(prevSkills => [...prevSkills, ...filteredNewSkills]);
+      };
+    }
+      fetchData();
+    }, [currentUser]);
+
+  
+
     async function getUser() {
-      const docSnap = await getDoc(docRef)
-      
+      const docSnap = await getDoc(usersDocRef)
       if (docSnap.exists()) {
-        console.log("Document data:", docSnap.data());
+        console.log("Document data user:", docSnap.data());
         return docSnap.data();
       } else {
         // docSnap.data() will be undefined in this case
         console.log("No such document!");
       }
-      }
+    }
 
+    async function getSkill(skillId) {
+      const skillDocRef = doc(db, "skills", skillId.toString());
+      const skillDoc = await getDoc(skillDocRef);
+      if (skillDoc.exists()) {
+        console.log("Document data skill:", skillDoc.data());
+        return skillDoc.data();
+      } else {
+        console.log("No such document!");
+        throw new Error(`No document with ID ${skillId}`);
+      }
+    }
+
+    
     const signOut = () => {
         auth.signOut().then(() => {
           console.log('User signed out!');
@@ -77,7 +121,7 @@ const HomeScreen = ({ navigation, route }) => {
     };
       
     if (!fontsLoaded) {
-      return <AppLoading />;
+      return <View />;
     } else {
       return (
         <ImageBackground source={image} resizeMode="cover" style={styles.container}>
@@ -88,14 +132,8 @@ const HomeScreen = ({ navigation, route }) => {
             <Modal isVisible={userModalVisible} style={styles.modalContainer}>
               <View style={styles.userModal}>
                 <View style={[, {flex: 1}]}>
-              <Text style={{fontFamily: 'Itim_400Regular', fontSize: 35, color: 'white', fontWeight: '600'}}>User Information</Text>
-                <Text>UID: {currentUser.uid}</Text>
-              <Text>name: {currentUser.username}</Text>
-              <Text>age: {currentUser.age}</Text>
-              <Text>balance: {currentUser.balance}</Text>
-              <Text>gender: {currentUser.gender}</Text>
-              <Text>jobs: {currentUser.jobs}</Text>
-              <Text>skills: {currentUser.skills}</Text>
+                  <Text style={{fontFamily: 'Itim_400Regular', fontSize: 35, color: 'white', fontWeight: '600'}}>User Information</Text>    
+                  <UserInfo userInfo={currentUser} skills={skills}/>
                 </View>
 
                 <View style={{flexDirection: 'row', width: '100%', justifyContent:'center', marginBottom: 25}}>
@@ -142,8 +180,8 @@ const HomeScreen = ({ navigation, route }) => {
               <View style={styles.headerBottomBar}></View>
             </View>
             <View style={styles.progressBarContainer}>
-              <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center'}}>
-                <Text style={{fontFamily: 'Itim_400Regular', fontSize: 30, marginRight: 10}}>Year 1</Text>
+              <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', gap: 0}}>
+                <Text style={{fontFamily: 'Itim_400Regular', fontSize: 30, marginRight: 10}}> year { currentUser.age }</Text>
                 <Progress.Bar progress={ progress } width={250} height={15} borderRadius={15} color='#A4E860' unfilledColor='gray' borderColor='#692600' borderWidth={3}/>
               </View>
             </View>
@@ -157,8 +195,10 @@ const HomeScreen = ({ navigation, route }) => {
               <View style={styles.buildingContainer}>
 
                 <View style={styles.building}>
-                  <Pressable onPress={() => navigation.navigate('Restaurant')}
-                  style={{height: "100%", width: 200, alignSelf: 'flex-end'}} />
+                
+                <Pressable onPress={() => navigation.navigate('Restaurant')}
+                  style={{height: "100%", width: 200, alignSelf: 'flex-end', marginLeft: 200}} />
+                
                 </View>
 
                 <View style={styles.building}>
@@ -287,7 +327,7 @@ const styles = StyleSheet.create({
       alignItems: 'center',
       justifyContent: 'center',
       height: 50,
-      width: '90%',
+      width: '92%',
       flexDirection: 'column',
       backgroundColor: '#F1B564',
       borderRadius: 10,
@@ -314,7 +354,7 @@ const styles = StyleSheet.create({
     building: {
       height: "25%",
       width: '100%',
-     
+      display: 'flex',
       flexDirection: 'row',
     },
     BottomButtonsContainer: {
@@ -375,7 +415,7 @@ const styles = StyleSheet.create({
       borderWidth: 5,
       borderRadius: 10,
       width: '90%',
-      height: '70%',
+      height: '80%',
       padding: 6,
     }
 });

@@ -31,3 +31,6 @@ export const auth = initializeAuth(app, {
 export const db = getFirestore(app);
 
 export const userCollection = collection(db, 'users');
+
+export const skillCollection = collection(db, 'skills');
+
