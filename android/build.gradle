@@ -17,6 +17,8 @@ buildscript {
     dependencies {
         classpath('com.android.tools.build:gradle')
         classpath('com.facebook.react:react-native-gradle-plugin')
+        implementation 'com.facebook.fresco:animated-gif:2.5.0'
+
     }
 }
 

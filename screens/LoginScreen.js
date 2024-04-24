@@ -56,7 +56,6 @@ const LoginScreen = ({navigation}) => {
                 // function to Get user data from firestore
                 const fetchData = async () => {
                     const userData = await getUser();
-                    console.log('user login data: ', userData);
                     // if user has username, navigate to home screen
                     if (userData.username !== "" && userData.username !== undefined) {
                         // check if user has logged in yesterday

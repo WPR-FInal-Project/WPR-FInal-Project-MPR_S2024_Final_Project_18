@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, Pressable, Platform, ImageBackground} from 'react-native';
+import { View, Text, StyleSheet, Pressable, Image, ImageBackground} from 'react-native';
 import { auth } from '../config/firebase';
 import { doc, getDoc, collection, query, where, getDocs, setDoc, updateDoc } from "firebase/firestore";
 import { db } from '../config/firebase';
 import { useFonts, Itim_400Regular } from '@expo-google-fonts/itim';
 import * as Progress from 'react-native-progress';
+
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
+import Entypo from 'react-native-vector-icons/Entypo';
 import Modal from "react-native-modal";
 import UserInfoModal from '../components/UserInfoModal';
 import DailyRewardModal from '../components/DailyRewardModal';
@@ -14,8 +16,10 @@ import ButtonOrange from '../components/ButtonOrange';
 import Header from '../components/Header';
 import LongLabel from '../components/LongLabel';
 import SkipFiveModal from '../components/SkipFiveModal';
-const image = (require('../assets/images/home-bg.png'));
+import ResetModal from '../components/ResetModal';
 
+const image = (require('../assets/images/home-bg.png'));
+const coderImg = ('../assets/images/coder.gif');
 const HomeScreen = ({ navigation, route }) => {
   let [fontsLoaded] = useFonts({
     Itim_400Regular,
@@ -31,6 +35,7 @@ const HomeScreen = ({ navigation, route }) => {
     const [userModalVisible, setUserModalVisible] = useState(false);
     const [dailyRewardModalVisible, setDailyRewardModalVisible] = useState(route.params.dailyEnabled);
     const [skipFiveVisible, setSkipFiveVisible] = useState(false);
+    const [resetModalVisible, setResetModalVisible] = useState(false);
 
     const [age, setAge] = useState(0);
     const [dailyRewardEnabled, setDailyRewardEnabled] = useState(route.params.dailyEnabled);
@@ -42,6 +47,10 @@ const HomeScreen = ({ navigation, route }) => {
     const toggleUserModal = () => {
       setUserModalVisible(!userModalVisible);
     };
+
+    const toggleResetModal = () => {
+      setResetModalVisible(!resetModalVisible);
+    }
 
     const toggleDailyRewardModal = () => {
       setDailyRewardModalVisible(!dailyRewardModalVisible);
@@ -89,14 +98,19 @@ const HomeScreen = ({ navigation, route }) => {
             setAge(prevAge => {
               const newAge = prevAge + 1;
               updateDoc(doc(db, 'users', uid), { age: newAge });
-              console.log('age updated: ' + newAge);
+              if (newAge === 80){
+                setResetModalVisible(true);
+                handleReset();
+              }
               return newAge;
             });
-
+            
           } catch (error) {
             console.error("Error updating username: ", error);
           }
+          
         }
+
         setProgress(step / steps); // Calculate progress percentage
       }, intervalTime);
     
@@ -130,7 +144,6 @@ const HomeScreen = ({ navigation, route }) => {
     async function getUser() {
       const docSnap = await getDoc(usersDocRef)
       if (docSnap.exists()) {
-        console.log("Document data user:", docSnap.data());
         return docSnap.data();
       } else {
         // docSnap.data() will be undefined in this case
@@ -160,7 +173,6 @@ const HomeScreen = ({ navigation, route }) => {
       }
       const JobDoc = await getDoc(doc(db, "jobs", jobId.toString()));
       if (JobDoc.exists()) {
-        console.log("Document data job:", JobDoc.data());
         return JobDoc.data();
       } else {
         console.log("No such document!");
@@ -186,7 +198,17 @@ const HomeScreen = ({ navigation, route }) => {
       }
     }
     
-
+    const handleReset = () => {
+      updateDoc(doc(db, 'users', uid), {
+            balance: 0,
+            age: 0,
+            skills: [],
+            job: 0,
+            health: 100,
+            happiness: 100,
+      });
+      setAge(0);
+    }
     if (!fontsLoaded) {
       return <View />;
     } else {
@@ -213,6 +235,11 @@ const HomeScreen = ({ navigation, route }) => {
             <DailyRewardModal isVisible={dailyRewardModalVisible} 
             toggleFunction={toggleDailyRewardModal} 
             streak={currentUser.daily_login_streak}/>
+
+            <ResetModal 
+            isVisible={resetModalVisible} 
+            toggleFunction={toggleResetModal}
+            confirmFunction={handleReset}/>
 
             <Header 
             balance={balance}
@@ -263,11 +290,21 @@ const HomeScreen = ({ navigation, route }) => {
                   style={{height: "100%", width: 180}} >
                     <LongLabel label='House' enable={age >= 18}/>
                   </Pressable>
+
+                <View style={styles.coderImg}>
+                  <Image
+                  resizeMode="cover"
+                  style={{height: "100%", width: "100%"}}
+                  source={require('../assets/images/coder.gif')}/>
+                </View>
+                  
                 </View>
               </View>
 
               <View style={styles.BottomButtonsContainer}>
-                <ButtonOrange disabled={false}></ButtonOrange>
+                <ButtonOrange onPress={toggleResetModal} disabled={false}>
+                  <Entypo name="loop" size={40} color="white" />
+                </ButtonOrange>
 
                 <ButtonOrange onPress={toggleUserModal} disabled={false}>
                   <FontAwesome name="user-circle-o" size={40} color="white" />
@@ -321,7 +358,6 @@ const styles = StyleSheet.create({
       
     },
     building: {
-      
       height: "25%",
       width: '100%',
       display: 'flex',
@@ -337,6 +373,13 @@ const styles = StyleSheet.create({
       justifyContent: 'center',
       alignItems: 'center'
     },
-    
+    coderImg: {
+      width: "45%", 
+      borderWidth: 3,
+       height: "100%",
+      borderRadius: 10, 
+      marginLeft: 25,
+      overflow: 'hidden'
+    }
 });
 export default HomeScreen;
