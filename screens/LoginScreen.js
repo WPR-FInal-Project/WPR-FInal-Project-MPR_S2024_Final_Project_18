@@ -75,7 +75,6 @@ const LoginScreen = ({navigation}) => {
                         }
                     } else {
                          // if user does not have username, navigate to username screen
-                      setLoading(false);
                       navigation.navigate('Username', {uid: userData.uid, username: userData.username});                
                     }
                   };
