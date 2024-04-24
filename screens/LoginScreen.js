@@ -67,7 +67,7 @@ const LoginScreen = ({navigation}) => {
                             navigation.navigate('Home', {uid: userData.uid, dailyEnabled: true});
                         } else if (new Date().getDate() - userData.last_login > 1){
                             // if user has not logged in for more than 1 day, reset daily login streak
-                            await updateDoc(doc(db, 'users', userData), { daily_login_streak: 0});
+                            await updateDoc(doc(db, 'users', userData.uid), { daily_login_streak: 0});
                             navigation.navigate('Home', {uid: userData.uid, dailyEnabled: false});
                         } else {
                             // if user has logged in today, navigate to home screen with daily reward disabled

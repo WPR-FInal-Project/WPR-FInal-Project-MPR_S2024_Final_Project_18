@@ -140,6 +140,9 @@ const HomeScreen = ({ navigation, route }) => {
 
     // function to get skill data from firestore by skillId
     async function getSkill(skillId) {
+      if (skillId === undefined) {
+        throw new Error("Skill ID is undefined");
+      }
       const skillDocRef = doc(db, "skills", skillId.toString());
       const skillDoc = await getDoc(skillDocRef);
       if (skillDoc.exists()) {
@@ -152,7 +155,9 @@ const HomeScreen = ({ navigation, route }) => {
     }
 
     async function getJob(jobId) {
-     
+      if (jobId === undefined) {
+        throw new Error("Job ID is undefined");
+      }
       const JobDoc = await getDoc(doc(db, "jobs", jobId.toString()));
       if (JobDoc.exists()) {
         console.log("Document data job:", JobDoc.data());

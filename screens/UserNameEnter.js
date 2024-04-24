@@ -30,7 +30,7 @@ const UserNameEnter = ({navigation, route}) => {
             try {
                 await setDoc(doc(db, 'users', uid), { username, gender }, { merge: true });
                 const user = await getUser();
-                navigation.navigate('Home', { uid: uid });
+                navigation.navigate('Home', { uid: user.uid });
             } catch (error) {
                 console.error("Error updating username: ", error);
             }

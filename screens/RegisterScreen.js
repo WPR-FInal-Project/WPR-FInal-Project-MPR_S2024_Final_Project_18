@@ -51,7 +51,7 @@ const RegisterScreen = ({navigation}) => {
             daily_login_streak: 0,
             age: 0,
             skills: [],
-            jobs: "",
+            job: 0,
             health: 100,
             happiness: 100,
             last_login: 0,
