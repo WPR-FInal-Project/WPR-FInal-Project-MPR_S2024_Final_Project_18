@@ -5,12 +5,15 @@ import { doc, getDoc, collection, query, where, getDocs, setDoc, updateDoc } fro
 import { db } from '../config/firebase';
 import { useFonts, Itim_400Regular } from '@expo-google-fonts/itim';
 import * as Progress from 'react-native-progress';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
-import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
-import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import Modal from "react-native-modal";
-import UpperBar from '../components/UpperBar';
-import UserInfo from '../components/UserInfo';
+import UserInfoModal from '../components/UserInfoModal';
+import DailyRewardModal from '../components/DailyRewardModal';
+import ButtonOrange from '../components/ButtonOrange';
+import Header from '../components/Header';
+import LongLabel from '../components/LongLabel';
+import SkipFiveModal from '../components/SkipFiveModal';
 const image = (require('../assets/images/home-bg.png'));
 
 const HomeScreen = ({ navigation, route }) => {
@@ -24,25 +27,54 @@ const HomeScreen = ({ navigation, route }) => {
     const [currentUser, setCurrentUser] = useState({});
     const [skills, setSkills] = useState([]);
     const [progress, setProgress] = useState(0);
-    const [userModalVisible, setUserModalVisible] = useState(false);
-    const [age, setAge] = useState(0);
 
+    const [userModalVisible, setUserModalVisible] = useState(false);
+    const [dailyRewardModalVisible, setDailyRewardModalVisible] = useState(route.params.dailyEnabled);
+    const [skipFiveVisible, setSkipFiveVisible] = useState(false);
+
+    const [age, setAge] = useState(0);
+    const [dailyRewardEnabled, setDailyRewardEnabled] = useState(route.params.dailyEnabled);
+    const [balance, setBalance] = useState(0);
+    const [health, setHealth] = useState(100);
+    const [happiness, setHappiness] = useState(100);
+    const [job, setJob] = useState({});
 
     const toggleUserModal = () => {
       setUserModalVisible(!userModalVisible);
     };
 
+    const toggleDailyRewardModal = () => {
+      setDailyRewardModalVisible(!dailyRewardModalVisible);
+      const handleDailyReward = () => {
+        if (dailyRewardEnabled) {
+          updateDoc(doc(db, 'users', uid), { balance: currentUser.balance + 100 });
+          setDailyRewardEnabled(false);
+          setBalance(currentUser.balance + 100);
+        } 
+      };
+      handleDailyReward();
+    }
+
+    const toggleSkipToFiveModal = () => {
+      setSkipFiveVisible(!skipFiveVisible);
+    }
+    // retrieve user data from firestore, each time the attribute change
     useEffect(() => {
         const fetchData = async () => {
           setSkills([]);
           const user = await getUser();
           setCurrentUser(user);
           setAge(user.age);
+          setBalance(user.balance);
+          setHealth(user.health);
+          setHappiness(user.happiness);
           setLoading(false);
+          
         }
         fetchData();
-    }, [age]);
+    }, [age, balance]);
 
+    // update age every 12 minutes
     useEffect(() => {
       const duration =  12 * 60 * 1000; // 1 minute in milliseconds
       const intervalTime = 100; // Update frequency in milliseconds
@@ -71,22 +103,30 @@ const HomeScreen = ({ navigation, route }) => {
       return () => clearInterval(interval);
     }, []);
 
+    // retrieve skills data from firestore
     useEffect(() => {
       const fetchData = async () => {
         if (currentUser && currentUser.skills) { // Check if currentUser and skills exist
         
+          // Get all skills from the user's skills array
         const newSkills = await Promise.all(currentUser.skills.map(getSkill));
+        
+        //  Filter out skills that already exist in the skills array
         const filteredNewSkills = newSkills.filter(skill => {
           return !skills.some(existingSkill => existingSkill.id === skill.id);
         });
         setSkills(prevSkills => [...prevSkills, ...filteredNewSkills]);
+
+        const job = await getJob(currentUser.job);
+        setJob(job);
+        // Add new skills to the skills array
       };
     }
       fetchData();
     }, [currentUser]);
 
   
-
+    // function to get user data from firestore
     async function getUser() {
       const docSnap = await getDoc(usersDocRef)
       if (docSnap.exists()) {
@@ -98,6 +138,7 @@ const HomeScreen = ({ navigation, route }) => {
       }
     }
 
+    // function to get skill data from firestore by skillId
     async function getSkill(skillId) {
       const skillDocRef = doc(db, "skills", skillId.toString());
       const skillDoc = await getDoc(skillDocRef);
@@ -110,7 +151,19 @@ const HomeScreen = ({ navigation, route }) => {
       }
     }
 
-    
+    async function getJob(jobId) {
+     
+      const JobDoc = await getDoc(doc(db, "jobs", jobId.toString()));
+      if (JobDoc.exists()) {
+        console.log("Document data job:", JobDoc.data());
+        return JobDoc.data();
+      } else {
+        console.log("No such document!");
+        throw new Error(`No document with ID ${jobId}`);
+      }
+    }
+
+    // function to update user data in firestore
     const signOut = () => {
         auth.signOut().then(() => {
           console.log('User signed out!');
@@ -119,7 +172,16 @@ const HomeScreen = ({ navigation, route }) => {
           console.error('Sign Out Error', error);
         });
     };
-      
+
+    // function to skip to age 5
+    const skipToFive = () => {
+      if (age < 5){
+        updateDoc(doc(db, 'users', uid), { age: 5}, { merge: true });
+        setAge(5);
+      }
+    }
+    
+
     if (!fontsLoaded) {
       return <View />;
     } else {
@@ -130,116 +192,85 @@ const HomeScreen = ({ navigation, route }) => {
           ) : (
             <>
             <Modal isVisible={userModalVisible} style={styles.modalContainer}>
-              <View style={styles.userModal}>
-                <View style={[, {flex: 1}]}>
-                  <Text style={{fontFamily: 'Itim_400Regular', fontSize: 35, color: 'white', fontWeight: '600'}}>User Information</Text>    
-                  <UserInfo userInfo={currentUser} skills={skills}/>
-                </View>
-
-                <View style={{flexDirection: 'row', width: '100%', justifyContent:'center', marginBottom: 25}}>
-                  <View style={[styles.BottomButtons, {alignSelf: 'center'}]}>
-                    <View style={[styles.buttonWrapper, { marginRight: 30}]}>
-                      <Pressable style={styles.button} onPress={() => {toggleUserModal()}}>
-                        <Text style={{color: 'white', fontSize: 30, fontFamily: 'Itim_400Regular'}}>Close</Text>
-                      </Pressable>
-                    </View>
-                  </View>
-                  <View style={[styles.BottomButtons, {alignSelf: 'center'}]}>
-                    <View style={[styles.buttonWrapper, {marginLeft: 30}]}>
-                      <Pressable style={styles.button} onPress={signOut}>
-                        <Text style={{color: 'white', fontSize: 30, fontFamily: 'Itim_400Regular'}}>Log out</Text>
-                      </Pressable>
-                    </View>
-                  </View>
-                </View>
-              
-              </View>
+              <UserInfoModal 
+              job={job.title}
+              currentUser={currentUser} 
+              skills={skills} 
+              toggleUserModal={toggleUserModal} 
+              signOut={signOut}/>
             </Modal> 
-            <View style={styles.headerContainer}>
-              
-                <View style={styles.infomationContainer}>
-                  <View style={styles.balanceContainer}>
-                  <UpperBar/>
-                   <FontAwesome5 name="coins" size={35} color="yellow" style={styles.icons}/>     
-                   <Text style={{fontFamily: 'Itim_400Regular', fontSize: 23, color: 'white', fontWeight: '600'}}>{currentUser.balance}</Text>
-                  </View>
-                  
-                  <View style={styles.healthContainer}>
-                  <UpperBar/>
-                    <MaterialCommunityIcons name="heart-multiple" size={35} color="#F73653" style={styles.icons}/>     
-                    <Text style={{fontFamily: 'Itim_400Regular', fontSize: 23, color: 'white', fontWeight: '600'}}>{currentUser.health}</Text>
-                  </View>
 
-                  <View style={styles.happinessContainer}>
-                  <UpperBar/>
-                    <MaterialCommunityIcons name="emoticon-happy" size={35} color="yellow" style={styles.icons}/>     
-                    <Text style={{fontFamily: 'Itim_400Regular', fontSize: 23, color: 'white', fontWeight: '600'}}>{currentUser.happiness}</Text>
-                  </View>
-                </View>
+            <SkipFiveModal 
+            isVisible={skipFiveVisible} 
+            toggleFunction={toggleSkipToFiveModal}
+            confirmFunction={skipToFive}/>
+               
+            <DailyRewardModal isVisible={dailyRewardModalVisible} 
+            toggleFunction={toggleDailyRewardModal} 
+            streak={currentUser.daily_login_streak}/>
 
-              <View style={styles.headerBottomBar}></View>
-            </View>
+            <Header 
+            balance={balance}
+            health={health}
+            happiness={happiness}/>
+
             <View style={styles.progressBarContainer}>
               <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', gap: 0}}>
                 <Text style={{fontFamily: 'Itim_400Regular', fontSize: 30, marginRight: 10}}> year { currentUser.age }</Text>
                 <Progress.Bar progress={ progress } width={250} height={15} borderRadius={15} color='#A4E860' unfilledColor='gray' borderColor='#692600' borderWidth={3}/>
               </View>
             </View>
-
-            {/*  
-              
-              <Text>daily_login_streak: {currentUser.daily_login_streak}</Text>
-              
-              */}
+            
 
               <View style={styles.buildingContainer}>
-
                 <View style={styles.building}>
-                
-                <Pressable onPress={() => navigation.navigate('Restaurant')}
-                  style={{height: "100%", width: 200, alignSelf: 'flex-end', marginLeft: 200}} />
-                
+                  <Pressable onPress={() => navigation.navigate('Restaurant')}
+                  disabled={age < 18}
+                  style={{height: "100%", width: 200, alignSelf: 'flex-end', marginLeft: 200}}>
+                  <LongLabel label='Restaurant' enable={age >= 18}/>
+                        
+                  </Pressable>
                 </View>
 
                 <View style={styles.building}>
-                <Pressable onPress={() => navigation.navigate('School')}
-                  style={{height: "100%", width: 180}} />
+                  <Pressable onPress={() => navigation.navigate('School')}
+                  
+                  style={{height: "100%", width: 180}} >
+                  <LongLabel label='School' enable={true}/>
+                        
+                  </Pressable>
                 </View>
 
                 <View style={styles.building}>
                   <Pressable onPress={() => navigation.navigate('RentalHouse')}
                     style={{height: "100%", width: 180}} />
-
                   <Pressable onPress={() => navigation.navigate('Work')}
-                    style={{height: "100%", width: 200, alignSelf: 'flex-end', marginLeft: 20}} />
+                  disabled={age < 18}
+                    style={{height: "100%", width: 200, alignSelf: 'flex-end', marginLeft: 20}}>
+                      <LongLabel label='Office' enable={age >= 18}/>
+                        
+                  </Pressable>
                 </View>
 
                 <View style={styles.building}>
-                  
-                <Pressable onPress={() => navigation.navigate('RentalHouse')}
-                  style={{height: "100%", width: 180}} />
+                  <Pressable onPress={() => navigation.navigate('RentalHouse')}
+                  disabled={age < 18}
+                  style={{height: "100%", width: 180}} >
+                    <LongLabel label='House' enable={age >= 18}/>
+                  </Pressable>
                 </View>
               </View>
 
               <View style={styles.BottomButtonsContainer}>
-                <View style={styles.BottomButtons}>
-                  <View style={styles.buttonWrapper}>
-                    <Pressable style={styles.button}></Pressable>
-                  </View>
-                </View>
-                <View style={styles.BottomButtons}>
-                  <View style={styles.buttonWrapper}>
-                    <Pressable style={styles.button} onPress={toggleUserModal}>
-                      <FontAwesome name="user-circle-o" size={40} color="white" />
-                    </Pressable>
-                  </View>
-                </View>
-                <View style={styles.BottomButtons}>
-                  <View style={styles.buttonWrapper}>
-                    <Pressable style={styles.button}></Pressable>
-                  </View>
-                </View>
-                
+                <ButtonOrange disabled={false}></ButtonOrange>
+
+                <ButtonOrange onPress={toggleUserModal} disabled={false}>
+                  <FontAwesome name="user-circle-o" size={40} color="white" />
+                </ButtonOrange>
+
+                <ButtonOrange onPress={toggleSkipToFiveModal} disabled={age >= 5}>
+                  <Ionicons name={'play-skip-forward-circle'} size={40} color="white"></Ionicons>
+                </ButtonOrange>
               </View>
             </>
           )}
@@ -253,74 +284,7 @@ const styles = StyleSheet.create({
         flex: 1,
         alignItems: 'center',
     },
-    headerContainer: {
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      height: 110,
-      width: '100%',
-      flexDirection: 'column',
-      backgroundColor: '#7D5E46',
-      
-    },
-    infomationContainer: {
-      flex: 1,
-      flexDirection: 'row',
-      width: '100%',
-      marginTop: 50,
-      paddingLeft: 10,
-      justifyContent: 'center',
-    },
-    icons: {
-      position: 'absolute',
-      left: -14,
-      
-    },
-    balanceContainer:{
-      width: 100,
-      height: 40,
-      flexDirection: 'column',
-      alignItems: 'center',
-      backgroundColor: '#5C3933',
-      borderRadius: 10,
-      borderColor: '#331101',
-      borderWidth: 2,
-      borderBottomLeftRadius: 20,
-      borderBottomRightRadius: 20,
-    },
-    healthContainer:{
-      width: 100,
-      height: 40,
-      marginHorizontal: 25,
-      flexDirection: 'column',
-      alignItems: 'center',
-      backgroundColor: '#5C3933',
-      borderRadius: 10,
-      borderColor: '#331101',
-      borderWidth: 2,
-      borderBottomLeftRadius: 20,
-      borderBottomRightRadius: 20,
-    },
-    happinessContainer:{
-      
-      width: 100,
-      height: 40,
-      flexDirection: 'column',
-      alignItems: 'center',
-      backgroundColor: '#5C3933',
-      borderRadius: 10,
-      borderBottomLeftRadius: 20,
-      borderBottomRightRadius: 20,
-      borderColor: '#331101',
-      borderWidth: 2,
-    },
-    headerBottomBar: {
-      backgroundColor: '#362505', 
-      height: 13, 
-      width: '100%', 
-      borderTopColor: '#A37A64',
-      borderWidth: 3,
-    },
+    
     progressBarContainer: {
       marginTop: 20,
       display: 'flex',
@@ -352,6 +316,7 @@ const styles = StyleSheet.create({
       
     },
     building: {
+      
       height: "25%",
       width: '100%',
       display: 'flex',
@@ -363,60 +328,10 @@ const styles = StyleSheet.create({
       flexDirection: 'row',
       paddingBottom: 20
     },
-    BottomButtons: {
-      height: 80,
-      
-      width: '33.33%',
-      alignSelf: 'flex-end',
-      alignItems: 'center',
-      justifyContent: 'flex-end',
-      shadowColor: "#000",
-            shadowOffset: {
-                width: 0,
-                height: 6,
-            },
-            shadowOpacity: 0.27,
-            shadowRadius: 4.65,
-            elevation: 40,
-            zIndex:999,
-    },
-    button:{ 
-      backgroundColor: '#F14C01',
-      height: 50,
-      width: 110,
-      borderRadius: 10,
-      height: '85%', 
-      borderBottomColor: '#FFE472', 
-      borderBottomWidth: 2, 
-      alignItems: 'center',
-      justifyContent: 'center',
-      backgroundColor: '#F58D34'
-    },
-    buttonWrapper: {
-      height: '90%', 
-      backgroundColor: '#C54319', 
-      borderRadius: 10, 
-      alignItems: 'flex-start',
-       borderColor: '#692600', 
-      borderWidth: 2
-    },
     modalContainer: {
       justifyContent: 'center',
       alignItems: 'center'
     },
-    userModal: {
-      display: 'flex',
-      alignItems: 'center',
-      flexDirection: 'column',
-      backgroundColor: '#F1B564',
-      borderRadius: 10,
-      borderColor: '#692600',
-      
-      borderWidth: 5,
-      borderRadius: 10,
-      width: '90%',
-      height: '80%',
-      padding: 6,
-    }
+    
 });
 export default HomeScreen;

@@ -1,17 +1,17 @@
-import { set } from 'firebase/database';
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, TextInput, TouchableOpacity, ImageBackground, Image } from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
-import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import { auth } from '../config/firebase';
+import { db } from "../config/firebase.js";
+import { doc, getDoc, collection, query, where, getDocs, setDoc, updateDoc } from "firebase/firestore";
 import { signInWithEmailAndPassword } from 'firebase/auth';
 const image = (require('../assets/images/bg.jpeg'));
 
+// Login Screen
 const LoginScreen = ({navigation}) => {
     const [isPasswordHidden, setIsPasswordHidden] = useState(true);
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-
     const [emailError, setEmailError] = useState(false);
     const [passwordError, setPasswordError] = useState(false);
 
@@ -27,27 +27,68 @@ const LoginScreen = ({navigation}) => {
         return unsubscribe;
     }, []);
 
+
     const handleLogin = () => {
-        
         if (email !== '' && password !== '') {
+            // Sign in with email and password
             signInWithEmailAndPassword(auth, email, password)
             .then((userCredential) => {
                 setEmailError(false);
                 setPasswordError(false);
-                // Signed i
+
+                // after login, check if user has username
+                // function to get user data from firestore
+                async function getUser() {
+                    const docSnap = await getDoc(docRef)
+                    if (docSnap.exists()) {
+                      console.log("Document data:", docSnap.data());
+                      return docSnap.data();
+                    } else {
+                      // docSnap.data() will be undefined in this case
+                      console.log("No such document!");
+                    }
+                }
                 const user = userCredential.user;
                 console.log('user login: ', user.email);
-                navigation.navigate('Username', {uid: user.uid, username: user.username});                // ...
+                
+                // Get user data from firestore
+                const docRef = doc(db, "users", user.uid);
+                // function to Get user data from firestore
+                const fetchData = async () => {
+                    const userData = await getUser();
+                    console.log('user login data: ', userData);
+                    // if user has username, navigate to home screen
+                    if (userData.username !== "" && userData.username !== undefined) {
+                        // check if user has logged in yesterday
+                        if (new Date().getDate() - userData.last_login === 1) {
+                            // if user has logged in yesterday, update daily login streak
+                            await updateDoc(doc(db, 'users', userData.uid), { last_login: new Date().getDate(), daily_login_streak: userData.daily_login_streak + 1})
+                            // navigate to home screen with daily reward enabled
+                            navigation.navigate('Home', {uid: userData.uid, dailyEnabled: true});
+                        } else if (new Date().getDate() - userData.last_login > 1){
+                            // if user has not logged in for more than 1 day, reset daily login streak
+                            await updateDoc(doc(db, 'users', userData), { daily_login_streak: 0});
+                            navigation.navigate('Home', {uid: userData.uid, dailyEnabled: false});
+                        } else {
+                            // if user has logged in today, navigate to home screen with daily reward disabled
+                            navigation.navigate('Home', {uid: userData.uid, dailyEnabled: false});
+                        }
+                    } else {
+                         // if user does not have username, navigate to username screen
+                      setLoading(false);
+                      navigation.navigate('Username', {uid: userData.uid, username: userData.username});                
+                    }
+                  };
+                  fetchData();
             })
             .catch((error) => {
                 setEmailError(true);
                 setPasswordError(true);
-                const errorCode = error.code;
-                const errorMessage = error.message;
+                
             });
         }
     }
-
+    
     handleForgotPassword = () => {  
         // navigation.navigate('ForgotPassword');
     }
