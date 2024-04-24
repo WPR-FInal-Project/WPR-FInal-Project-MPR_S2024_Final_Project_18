@@ -54,6 +54,7 @@ const RegisterScreen = ({navigation}) => {
             jobs: "",
             health: 100,
             happiness: 100,
+            last_login: 0,
             // add other user properties here
           });
           console.log("User stored successfully");

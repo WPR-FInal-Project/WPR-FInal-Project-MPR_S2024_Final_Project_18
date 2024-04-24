@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, FlatList } from 'react-native';
 import { useFonts, Itim_400Regular } from '@expo-google-fonts/itim';
 
 
-const UserInfo = ( {userInfo, skills} ) => {
+const UserInfo = ( {userInfo, skills, job} ) => {
     let [fontsLoaded] = useFonts({
         Itim_400Regular,
       });
@@ -14,21 +14,18 @@ const UserInfo = ( {userInfo, skills} ) => {
         <View>
             <View style={styles.userInfoContainer}>
                 <View style={styles.textContainer}>
-                    <Text style={styles.text}>age: {userInfo.age}</Text>
-                </View>
-                <View style={styles.textContainer}>
-                    <Text style={styles.text}>balance: {userInfo.balance}</Text>
-                </View>
-                <View style={styles.textContainer}>
-                    <Text style={styles.text}>gender: {userInfo.gender}</Text>
-                </View>
-                <View style={styles.textContainer}>
-                    <Text style={styles.text}>jobs: {userInfo.jobs}</Text>
+                    <Text style={styles.text}>Age: {userInfo.age}</Text>
+                
+                    <Text style={styles.text}>Balance: {userInfo.balance}</Text>
+                
+                    <Text style={styles.text}>Gender: {userInfo.gender}</Text>
+                
+                    <Text style={styles.text}>Job: {job}</Text>
                 </View>
                 </View>
 
             <View style={styles.skillsContainer}>
-                <View><Text style={[styles.text, {color: '#51330B'}]}>skills</Text></View>
+                <View><Text style={[styles.text, {color: '#51330B'}]}>Skills</Text></View>
 
                 <View style={styles.skill}>
                 <FlatList
@@ -60,17 +57,18 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
       },
         textContainer: {
+        borderRadius: 6,
+        width: 250,
         backgroundColor: '#51330B',
         justifyContent: 'center',
-        paddingLeft: 10,
-        height: 50,
+        padding: 10
         
       },
       text: {
         fontFamily: 'Itim_400Regular',
         fontSize: 23,
         color: '#EFE0BD',
-        marginBottom: 10,
+        marginBottom: 5,
       },
       userInfoContainer: {
         borderColor: "#3B2105",
@@ -106,8 +104,7 @@ const styles = StyleSheet.create({
         backgroundColor: '#51330B',
         padding: 10,
         borderRadius: 6,
-        margin: 5,
-        height: 100,
+        height: 110,
     }
 
     
