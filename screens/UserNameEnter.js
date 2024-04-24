@@ -12,7 +12,6 @@ const UserNameEnter = ({navigation, route}) => {
     
     const uid = route.params.uid;
     const docRef = doc(db, "users", uid);
-    const [loading, setLoading] = useState(true);
     const [username, setUsername] = useState(route.params.username);
     const [gender, setGender] = useState("male");
     useEffect(() => {
@@ -20,9 +19,7 @@ const UserNameEnter = ({navigation, route}) => {
           const user = await getUser();
           if (user.username !== "" && user.username !== undefined) {
             navigation.navigate('Home', {uid: uid});
-          } else {
-            setLoading(false);
-          }
+          } 
         };
         fetchData();
     }, []);
@@ -33,7 +30,7 @@ const UserNameEnter = ({navigation, route}) => {
             try {
                 await setDoc(doc(db, 'users', uid), { username, gender }, { merge: true });
                 const user = await getUser();
-                navigation.navigate('Home', { uid: uid });
+                navigation.navigate('Home', { uid: user.uid });
             } catch (error) {
                 console.error("Error updating username: ", error);
             }
