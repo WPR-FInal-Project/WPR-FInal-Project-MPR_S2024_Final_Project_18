@@ -93,7 +93,7 @@ const HomeScreen = ({ navigation, route }) => {
 
     // update age every 12 minutes
     useEffect(() => {
-      const duration =  12 * 1 * 1000; // 1 minute in milliseconds
+      const duration =  12 * 60 * 1000; // 1 minute in milliseconds
       const intervalTime = 100; // Update frequency in milliseconds
       const steps = duration / intervalTime; // Total number of steps
       let step = 0; // Current step
@@ -288,7 +288,8 @@ const HomeScreen = ({ navigation, route }) => {
                 </View>
 
                 <View style={styles.building}>
-                  <Pressable onPress={() => navigation.navigate('School')}
+                  <Pressable onPress={() => 
+                  navigation.navigate('School', {user: currentUser, skills: skills})}
                   
                   style={{height: "100%", width: 180}} >
                   <LongLabel label='School' enable={true}/>

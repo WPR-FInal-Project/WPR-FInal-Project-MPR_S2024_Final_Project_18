@@ -7,12 +7,16 @@ import SubjectsData from '../data/SubjectsData';
 import firebase from 'firebase/compat/app';
 
 
-const SchoolScreen = ({UserLearnedSubjects}) => {
+const SchoolScreen = ({UserLearnedSubjects, route}) => {
     const navigation = useNavigation();
-    const[userAge, setUserAge] = useState(null);
+    const [userAge, setUserAge] = useState(null);
     const [filteredSkills, setFilteredSkills] = useState([]);
     const [subjects, setSubjects] = useState([]);
-    
+    const user = route.params.user;
+    const skills = route.params.skills;
+
+    console.log('User:', user);
+    console.log('Skills:', skills);
     //fetch the user age
     useEffect(() => {
         // const fetchUserData = async () => {

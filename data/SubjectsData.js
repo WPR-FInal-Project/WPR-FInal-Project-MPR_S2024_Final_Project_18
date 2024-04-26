@@ -1,15 +1,80 @@
-import React from 'react';
-
-//subjects list
-const SubjectsData = () => {
-    return [
-        { id: 1, name: 'Math', cost: 50, duration: 5 },
-        { id: 2, name: 'Science', cost: 60, duration: 4 },
-        { id: 3, name: 'Physics', cost: 60, duration: 2},
-        {id: 4, name: 'Basic Information Technology', cost: 60, duration: 2}
-
-        // Add more subjects as needed
-    ];
-};
-
-export default SubjectsData;
+const subjectData = {
+    primarySchool: {
+      subjects: [
+        {
+          name: "Mathematics",
+          prerequisites: [],
+          questions: [
+            {
+              question: "1 + 1 equals 3.",
+              answer: false
+            },
+            {
+              question: "2 + 2 equals 4.",
+              answer: true
+            },
+            // Add more questions as needed
+          ]
+        },
+        {
+          name: "Science",
+          prerequisites: ["Mathematics"],
+          questions: [
+            {
+              question: "Water freezes at 100 degrees Celsius.",
+              answer: false
+            },
+            {
+              question: "Plants need sunlight to photosynthesize.",
+              answer: true
+            },
+            // Add more questions as needed
+          ]
+        },
+        // Add more subjects for primary school
+      ]
+    },
+    secondarySchool: {
+      subjects: [
+        {
+          name: "Physics",
+          prerequisites: ["Mathematics", "Science"],
+          questions: [
+            {
+              question: "Objects fall faster than feathers in a vacuum.",
+              answer: true
+            },
+            {
+              question: "Sound travels faster in water than in air.",
+              answer: false
+            },
+            // Add more questions as needed
+          ]
+        },
+        // Add more subjects for secondary school
+      ]
+    },
+    highSchool: {
+      subjects: [
+        {
+          name: "Chemistry",
+          prerequisites: ["Mathematics", "Science"],
+          questions: [
+            {
+              question: "Water is composed of two hydrogen atoms and one oxygen atom.",
+              answer: true
+            },
+            {
+              question: "Acids have a pH greater than 7.",
+              answer: false
+            },
+            // Add more questions as needed
+          ]
+        },
+        // Add more subjects for high school
+      ]
+    }
+  };
+  
+  module.exports = subjectData;
+  
