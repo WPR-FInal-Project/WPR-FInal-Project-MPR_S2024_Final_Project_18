@@ -46,7 +46,7 @@ const HomeScreen = ({ navigation, route }) => {
     const [health, setHealth] = useState(100);
     const [happiness, setHappiness] = useState(100);
     const [job, setJob] = useState({});
-
+    const [relationship, setRelationship] = useState([]);
     const toggleUserModal = () => {
       setUserModalVisible(!userModalVisible);
     };
@@ -226,7 +226,15 @@ const HomeScreen = ({ navigation, route }) => {
       updateDoc(doc(db, 'users', uid), {
         balance: user.balance + 10000,
       });
+      setDoc(doc(db, 'users', uid), { 
+        relationship: [
+        {Rachel: 0},
+        {Alice: 0},
+        {Bob: 0} ]
+      }, { merge: true });
       setBalance(user.balance + 10000);
+      setRelationship(user.relationship);
+      
     }
     if (!fontsLoaded) {
       return <View />;
@@ -279,7 +287,7 @@ const HomeScreen = ({ navigation, route }) => {
 
               <View style={styles.buildingContainer}>
                 <View style={styles.building}>
-                  <Pressable onPress={() => navigation.navigate('Restaurant')}
+                  <Pressable onPress={() => navigation.navigate('Restaurant', {relationship: relationship, uid: uid})}
                   disabled={age < 18}
                   style={{height: "100%", width: 200, alignSelf: 'flex-end', marginLeft: 200}}>
                   <LongLabel label='Restaurant' enable={age >= 18}/>

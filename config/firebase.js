@@ -34,3 +34,5 @@ export const userCollection = collection(db, 'users');
 
 export const skillCollection = collection(db, 'skills');
 
+export const NPCsCollection = collection(db, 'NPCs');
+
