@@ -17,9 +17,11 @@ import Header from '../components/Header';
 import LongLabel from '../components/LongLabel';
 import SkipFiveModal from '../components/SkipFiveModal';
 import ResetModal from '../components/ResetModal';
+import ReachEighteenModal from '../components/ReachEighteenModal';
+import { set } from 'firebase/database';
 
 const image = (require('../assets/images/home-bg.png'));
-const coderImg = ('../assets/images/coder.gif');
+
 const HomeScreen = ({ navigation, route }) => {
   let [fontsLoaded] = useFonts({
     Itim_400Regular,
@@ -36,6 +38,7 @@ const HomeScreen = ({ navigation, route }) => {
     const [dailyRewardModalVisible, setDailyRewardModalVisible] = useState(route.params.dailyEnabled);
     const [skipFiveVisible, setSkipFiveVisible] = useState(false);
     const [resetModalVisible, setResetModalVisible] = useState(false);
+    const [reachEighteenVisible, setReachEighteenVisible] = useState(false);
 
     const [age, setAge] = useState(0);
     const [dailyRewardEnabled, setDailyRewardEnabled] = useState(route.params.dailyEnabled);
@@ -67,6 +70,11 @@ const HomeScreen = ({ navigation, route }) => {
     const toggleSkipToFiveModal = () => {
       setSkipFiveVisible(!skipFiveVisible);
     }
+
+    const toggleReachEighteenModal = () => {
+      setReachEighteenVisible(!reachEighteenVisible);
+    } 
+
     // retrieve user data from firestore, each time the attribute change
     useEffect(() => {
         const fetchData = async () => {
@@ -85,7 +93,7 @@ const HomeScreen = ({ navigation, route }) => {
 
     // update age every 12 minutes
     useEffect(() => {
-      const duration =  12 * 60 * 1000; // 1 minute in milliseconds
+      const duration =  12 * 1 * 1000; // 1 minute in milliseconds
       const intervalTime = 100; // Update frequency in milliseconds
       const steps = duration / intervalTime; // Total number of steps
       let step = 0; // Current step
@@ -101,6 +109,9 @@ const HomeScreen = ({ navigation, route }) => {
               if (newAge === 80){
                 setResetModalVisible(true);
                 handleReset();
+              } else if (newAge === 18) {
+                setReachEighteenVisible(true);
+                handleReachEighteen();
               }
               return newAge;
             });
@@ -193,7 +204,7 @@ const HomeScreen = ({ navigation, route }) => {
     // function to skip to age 5
     const skipToFive = () => {
       if (age < 5){
-        updateDoc(doc(db, 'users', uid), { age: 5}, { merge: true });
+        updateDoc(doc(db, 'users', uid), { age: 5 });
         setAge(5);
       }
     }
@@ -208,6 +219,14 @@ const HomeScreen = ({ navigation, route }) => {
             happiness: 100,
       });
       setAge(0);
+    }
+
+    const handleReachEighteen = async () => {
+      const user = await getUser();
+      updateDoc(doc(db, 'users', uid), {
+        balance: user.balance + 10000,
+      });
+      setBalance(user.balance + 10000);
     }
     if (!fontsLoaded) {
       return <View />;
@@ -240,6 +259,10 @@ const HomeScreen = ({ navigation, route }) => {
             isVisible={resetModalVisible} 
             toggleFunction={toggleResetModal}
             confirmFunction={handleReset}/>
+
+            <ReachEighteenModal isVisible={reachEighteenVisible} 
+            toggleFunction={toggleReachEighteenModal} 
+            />
 
             <Header 
             balance={balance}
