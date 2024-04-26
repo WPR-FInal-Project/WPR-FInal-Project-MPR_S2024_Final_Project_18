@@ -5,7 +5,7 @@ const GoBackButton = ( {onPress} ) => {
     return (
         <View style={styles.userInfoContainer}>
             <Pressable onPress={onPress}>
-            <Ionicons name="chevron-back" size={40} color="black" />
+            <Ionicons name="chevron-back" size={40} color="#51330B" />
             </Pressable>
         </View>
     );
@@ -13,6 +13,7 @@ const GoBackButton = ( {onPress} ) => {
 
 styles = StyleSheet.create({
 userInfoContainer: {
+    alignSelf: 'flex-start',
         borderColor: "#3B2105",
             borderWidth: 4,
           backgroundColor: '#EFE0BD',
