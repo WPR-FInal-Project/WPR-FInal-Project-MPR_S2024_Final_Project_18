@@ -2,6 +2,7 @@ const subjectData = {
     primarySchool: {
       subjects: [
         {
+          id: 1,
           name: "Mathematics",
           prerequisites: [],
           questions: [
@@ -14,9 +15,10 @@ const subjectData = {
               answer: true
             },
             // Add more questions as needed
-          ]
+          ], duration: 2
         },
         {
+          id: 2,
           name: "Science",
           prerequisites: ["Mathematics"],
           questions: [
@@ -29,14 +31,16 @@ const subjectData = {
               answer: true
             },
             // Add more questions as needed
-          ]
+          ], duration: 3,
         },
         // Add more subjects for primary school
-      ]
+      ],
+      
     },
     secondarySchool: {
       subjects: [
         {
+          id:3,
           name: "Physics",
           prerequisites: ["Mathematics", "Science"],
           questions: [
@@ -49,14 +53,16 @@ const subjectData = {
               answer: false
             },
             // Add more questions as needed
-          ]
+          ], duration: 4,
         },
         // Add more subjects for secondary school
-      ]
+      ],
+      
     },
     highSchool: {
       subjects: [
         {
+          id:4,
           name: "Chemistry",
           prerequisites: ["Mathematics", "Science"],
           questions: [
@@ -69,10 +75,11 @@ const subjectData = {
               answer: false
             },
             // Add more questions as needed
-          ]
+          ],duration: 4,
         },
         // Add more subjects for high school
-      ]
+      ],
+      
     }
   };
   
