@@ -75,6 +75,25 @@ const HomeScreen = ({ navigation, route }) => {
       setReachEighteenVisible(!reachEighteenVisible);
     } 
 
+    useEffect(() => {
+      // Refresh expenses whenever the screen focus changes
+      const unsubscribe = navigation.addListener('focus', () => {
+          const fetchData = async () => {
+          setSkills([]);
+          const user = await getUser();
+          setCurrentUser(user);
+          setAge(user.age);
+          setBalance(user.balance);
+          setHealth(user.health);
+          setHappiness(user.happiness);
+          setLoading(false);
+        }
+        fetchData();
+      });
+
+      return unsubscribe;
+  }, [navigation]);
+
     // retrieve user data from firestore, each time the attribute change
     useEffect(() => {
         const fetchData = async () => {
