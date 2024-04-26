@@ -1,137 +1,144 @@
-import React, {useEffect, useState} from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import { View, Text, StyleSheet, Pressable, Alert, } from 'react-native';
 import { db, userCollection, skillCollection } from '../config/firebase';
-import {doc, docs, getDoc} from "firebase/firestore"
-import SubjectsData from '../data/SubjectsData';
+import { doc, docs, getDoc, updateDoc } from "firebase/firestore"
+import subjectData from '../data/SubjectsData';
 import firebase from 'firebase/compat/app';
+import { Entypo } from '@expo/vector-icons';
+import { set } from 'firebase/database';
 
 
-const SchoolScreen = ({UserLearnedSubjects, route}) => {
+const SchoolScreen = ({ UserLearnedSubjects , route }) => {
     const navigation = useNavigation();
-    const [userAge, setUserAge] = useState(null);
+    const [userAge, setUserAge] = useState(0);
     const [filteredSkills, setFilteredSkills] = useState([]);
-    const [subjects, setSubjects] = useState([]);
+    const [selectedSubject, setSelectedSubject] = useState(null);
     const user = route.params.user;
     const skills = route.params.skills;
+    const uid = route.params.uid; 
 
     console.log('User:', user);
     console.log('Skills:', skills);
-    //fetch the user age
+    console.log("Current userAge:", userAge);
+
+    // userAge = user.age;
     useEffect(() => {
-        // const fetchUserData = async () => {
-        //     try{
-        //         const userData = await db.collection('users').doc(uid).get();
-        //         const age = userData.data().age;
-        //         setUserAge(age);
-        //     }catch(error){
-        //         console.log('Error fetching user data:', error);
-        //     }
-        // };
-        // fetchUserData();
-        const fetchUserData = async () => {
-            try{
-                const userData = await userCollection.age;
-            }catch(error){
-                console.log('Error fetching user data:', error);
+        if(user && user.age !== undefined){
+            setUserAge(user.age)
+        };
+    }, [user]);
+   
+    //handle subject selection
+    const handleSelectSubject= (subject) => {
+        setSelectedSubject(subject);
+    };
+
+    //handle learning a subject
+    const handleLearnSubject = async () => {
+        try{
+            if(selectedSubject){
+                if(userAge < 5){
+                    Alert.alert('Oops!', 'You need to grow a bit more before you can start learning.');
+                    return;
+                };
             }
-        }
-    }, []);
-    //fetch subjects data
-    useEffect(() => {
-        setSubjects(SubjectsData);
-    }, []);
-
-    //fetch skills from Firebase & filter based on the subjects the user has learned
-    useEffect(() => {
-        if(userAge >= 5 && userAge < 18){
-            const fetchSkills = async () => {
-                try{
-                    const skillsSnapshot = await db.collection('skills').get();
-                    const skills = skillsSnapshot.docs.map(doc => doc.data());
-
-                    //Filter skills based on the subjects the user has learned
-                    const filteredSkills = skills.filter(skill =>{
-                        return UserLearnedSubjects.includes(skill.requiredSubjects);
-                    })
-                    setFilteredSkills(filteredSkills);
-                }catch(error){
-                    console.error('Error fetching skills:', error);
+                //check prerequisites
+                const prerequisites = selectedSubject.prerequisites;
+                if (prerequisites && prerequisites.length > 0){
+                    const missingPrerequisites = prerequisites.filter(subject => !skills.includes(subject));
+                    if(missingPrerequisites.length > 0){
+                        Alert.alert('Oops!', `You need to complete ${missingPrerequisites.join(', ')} before you can learn ${selectedSubject.name}.`);
+                        return;
+                    }
                 }
-            };
-            fetchSkills();
-        }
-    }, [userAge, UserLearnedSubjects]);
+                //learn the subject
+                const updatedSkills = [...skills, selectedSubject.name];
+                const updatedAge = userAge + selectedSubject.duration
 
-    //Handle selecting a subject or skill
-    const handleSelect = async (item, cost, duration) => {
-        if(userAge >= 5 && userAge < 18){
-            console.log(`Selected subject: ${item.name}`);
-
-            //Learning a subject
-            try{
-                // deduct the cost of the subject from the user's balance
-                await 
-                db.collection('users').doc(uid).update({
-                    balance: firebase.firestore.FieldValue.increment(-item.cost),
-                    age: firebase.firestore.FieldValue.increment(item.duration)
+                //update skills and user age
+                await updateDoc(doc(db, 'users', uid),{
+                    skills: updatedSkills,
+                    age: updatedAge,
                 });
-                console.log(`Subject ${item.name} learned successfully`);
-            }catch (error){
-                console.error('Error learning subject:', error);
-            }
-        }else if(userAge >= 18){
-            console.log(`Selected skill: ${item.name}`);
-            if(UserLearnedSubjects.includes(item.requiredSubjects)){
-                try{
-                    //add the skill to the skill array
-                    await db.collection('users').doc(uid).update({
-                        skills: firebase.firestore.FieldValue.arrayUnion(item.name),
-                        age: firebase.firestore.FieldValue.increment(item.duration)
-                    });
-                    console.log(`Skill ${item.name} learned successfully`);
-                }catch(error){
-                    console.error('Error learning skill:', error);
-                }
-            }else{
-                console.log(`Cannot learn skill ${item.name} without completing required subject`);
-            }
+
+                //clear the selected subject
+                setSelectedSubject(null);
+
+                //update user age
+                setUserAge(updatedAge)
         }
+        catch(error){
+            console.error('Error handling choosing subject: ', error)
     }
 
-    //render subjects or skills based on users age
-    const renderItems = () => {
-        if(userAge < 3){
-            Alert.alert('Uh oh!', 'There is nothing to learn now, you need to grow.');
-            navigation.goBack();
-            return;
-            
-        }else if(userAge >= 5 && userAge < 18){
-            return subjects.map(subject => (
-                <Pressable
-                key={subject.id}
-                title ={subject.name}
-                onPress={() => handleSelect (subject, subject.cost)}
-                />
-            ));
-        }else if(userAge >= 18){
-            return filteredSkills.map(skill => (
-                <Pressable
-                key = {skill.id}
-                title = {skill.name}
-                onPress={() => handleSelect(skill, 0)} // skill cost is not passed
-                />
-            ))
-        }
+    }
+
+
+
+    // function goBack(){
+    //     navigation.navigate('Home', {uid: uid});
+    // } property uid does not exist
+
+    function goBack(){
+        navigation.goBack();
+        return;
     }
     return (
-        <View style={styles.container}>
-            <Text>School Screen</Text>
-            <View>
-            {renderItems()}
+
+        <View>
+
+            <View style={styles.backBtnContainer} >
+                <Pressable 
+                onPress={goBack}>
+                    <Entypo name="back" size={40} color="black" />
+                </Pressable>
             </View>
-            
+            <View style={styles.container}>
+                <Text>School Screen</Text>
+                <View>
+                {userAge >= 5 && (
+                    <View>
+                        <Text style={styles.heading}>Select a subject:</Text>
+                        <View style={styles.levelContainer}>
+                            <Text style={styles.levelHeading}>Primary School</Text>
+                            {subjectData.primarySchool.subjects.map(subject => (
+                                <Pressable key={subject.id} onPress={() => handleSelectSubject(subject)}  style={styles.subjectButton}>
+                                    <Text style={styles.subjectButtonText}>{subject.name}</Text>
+                                </Pressable>
+                            ))}
+                        </View>
+
+                        <View style={styles.levelContainer}>
+                        <Text style={styles.levelHeading}>Secondary School</Text>
+                            {subjectData.secondarySchool.subjects.map(subject => (
+                                <Pressable key={subject.id} onPress={() => handleSelectSubject(subject)} style={styles.subjectButton} >
+                                    <Text style={styles.subjectButtonText}>{subject.name}</Text>
+                                </Pressable>
+                            ))}
+                        </View>
+
+                        <View style={styles.levelContainer}>
+                        <Text style={styles.levelHeading}>High School</Text>
+                            {subjectData.highSchool.subjects.map(subject => (
+                                <Pressable key={subject.id} onPress={() => handleSelectSubject(subject)} style={styles.subjectButton}>
+                                    <Text style={styles.subjectButtonText}>{subject.name}</Text>
+                                </Pressable>
+                            ))}
+                        </View>
+                        {selectedSubject && (
+                            <Pressable onPress={handleLearnSubject} style={styles.learnButton}>
+                                <Text style={styles.learnButtonText}>Learn {selectedSubject.name}</Text>
+                            </Pressable>
+                        )}
+                    </View>
+                )}
+                </View>
+                
+
+            </View>
         </View>
+
 
 
 
@@ -139,9 +146,57 @@ const SchoolScreen = ({UserLearnedSubjects, route}) => {
 };
 const styles = StyleSheet.create({
     container: {
-        flex: 1,
+        padding: 20,
         justifyContent: 'center',
         alignItems: 'center',
+    },
+    backBtnContainer:{
+        justifyContent: 'center',
+        alignItems:'center',
+        borderWidth: 1,
+        borderColor: 'black',
+        borderRadius: 8,
+        backgroundColor: 'orange',
+        padding: 0,
+        marginTop: 50,
+        marginRight: 50,
+        marginLeft: 20,
+        width: '20%',
+    },
+    heading: {
+        fontSize: 20,
+        fontWeight: 'bold',
+        marginBottom: 20,
+    },
+    levelContainer: {
+        marginBottom: 20,
+    },
+    levelHeading: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        marginBottom: 10,
+    },
+    subjectButton: {
+        backgroundColor: '#4CAF50',
+        paddingVertical: 10,
+        paddingHorizontal: 20,
+        borderRadius: 5,
+        marginBottom: 10,
+    },
+    subjectButtonText: {
+        color: '#FFF',
+        fontSize: 16,
+    },
+    learnButton: {
+        backgroundColor: '#2196F3',
+        paddingVertical: 10,
+        paddingHorizontal: 20,
+        borderRadius: 5,
+        marginTop: 20,
+    },
+    learnButtonText: {
+        color: '#FFF',
+        fontSize: 16,
     },
 });
 export default SchoolScreen;
