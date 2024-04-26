@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, Pressable, Image, ImageBackground } from 'react-native';
+import { View, Text, StyleSheet, Pressable, Image, ImageBackground, Platform } from 'react-native';
 import { doc, getDoc, collection, query, where, getDocs, setDoc, updateDoc } from "firebase/firestore";
 import { useFonts, Itim_400Regular } from '@expo-google-fonts/itim';
 import Header from '../components/Header';
@@ -165,7 +165,7 @@ const RestaurantScreen = ({ navigation, route }) => {
                     </View>
                     
                 </View>
-                <View style={{flexDirection: 'row'}}>
+                <View style={{flexDirection: 'row', gap: Platform.OS === 'ios' ? 5 : null}}>
                     {npcs.map(npc => (
                         <ButtonOrange
                             key={npc.id}

@@ -236,6 +236,7 @@ const HomeScreen = ({ navigation, route }) => {
             job: 0,
             health: 100,
             happiness: 100,
+            relationship: [0,0,0],
       });
       setAge(0);
     }
@@ -246,10 +247,7 @@ const HomeScreen = ({ navigation, route }) => {
         balance: user.balance + 10000,
       });
       setDoc(doc(db, 'users', uid), { 
-        relationship: [
-        {Rachel: 0},
-        {Alice: 0},
-        {Bob: 0} ]
+        relationship: [0,0,0]
       }, { merge: true });
       setBalance(user.balance + 10000);
       setRelationship(user.relationship);
@@ -327,7 +325,7 @@ const HomeScreen = ({ navigation, route }) => {
                 <View style={styles.building}>
                   <Pressable onPress={() => navigation.navigate('RentalHouse')}
                     style={{height: "100%", width: 180}} />
-                  <Pressable onPress={() => navigation.navigate('Work')}
+                  <Pressable onPress={() => navigation.navigate('Work', {uid: uid, skills: skills, job: job})}
                   disabled={age < 18}
                     style={{height: "100%", width: 200, alignSelf: 'flex-end', marginLeft: 20}}>
                       <LongLabel label='Office' enable={age >= 18}/>
@@ -384,7 +382,7 @@ const styles = StyleSheet.create({
       alignItems: 'center',
       justifyContent: 'center',
       height: 50,
-      width: '92%',
+      width: '97%',
       flexDirection: 'column',
       backgroundColor: '#F1B564',
       borderRadius: 10,

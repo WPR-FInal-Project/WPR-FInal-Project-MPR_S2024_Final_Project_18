@@ -14,6 +14,8 @@ const UserInfo = ( {userInfo, skills, job} ) => {
         <View>
             <View style={styles.userInfoContainer}>
                 <View style={styles.textContainer}>
+
+                    <Text style={styles.text}>Name: {userInfo.username}</Text>
                     <Text style={styles.text}>Age: {userInfo.age}</Text>
                 
                     <Text style={styles.text}>Balance: {userInfo.balance}</Text>
