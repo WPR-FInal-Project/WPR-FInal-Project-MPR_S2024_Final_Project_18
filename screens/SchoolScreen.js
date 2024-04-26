@@ -1,36 +1,37 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigation } from '@react-navigation/native';
-import { View, Text, StyleSheet, Pressable, Alert, } from 'react-native';
+import { View, Text, StyleSheet, Pressable, Alert, ImageBackground} from 'react-native';
 import { db, userCollection, skillCollection } from '../config/firebase';
 import { doc, docs, getDoc, updateDoc } from "firebase/firestore"
 import subjectData from '../data/SubjectsData';
+import GoBackButton from '../components/GoBackButton';
 import firebase from 'firebase/compat/app';
 import { Entypo } from '@expo/vector-icons';
 import { set } from 'firebase/database';
+import { useFonts, Itim_400Regular } from '@expo-google-fonts/itim';
+
+const image = (require('../assets/images/school.jpg'));
 
 
-const SchoolScreen = ({ UserLearnedSubjects , route }) => {
-    const navigation = useNavigation();
-    const [userAge, setUserAge] = useState(0);
+const SchoolScreen = ({ navigation, route }) => {
+    let [fontsLoaded] = useFonts({
+        Itim_400Regular,
+      });
+
+    const [userAge, setUserAge] = useState(route.params.user.age);
     const [filteredSkills, setFilteredSkills] = useState([]);
     const [selectedSubject, setSelectedSubject] = useState(null);
-    const user = route.params.user;
     const skills = route.params.skills;
     const uid = route.params.uid; 
 
-    console.log('User:', user);
-    console.log('Skills:', skills);
-    console.log("Current userAge:", userAge);
+    
 
     // userAge = user.age;
-    useEffect(() => {
-        if(user && user.age !== undefined){
-            setUserAge(user.age)
-        };
-    }, [user]);
+    
    
     //handle subject selection
     const handleSelectSubject= (subject) => {
+        console.log('Selected subject: ', subject);
         setSelectedSubject(subject);
     };
 
@@ -54,19 +55,16 @@ const SchoolScreen = ({ UserLearnedSubjects , route }) => {
                 }
                 //learn the subject
                 const updatedSkills = [...skills, selectedSubject.name];
-                const updatedAge = userAge + selectedSubject.duration
-
+                console.log('Updated skills: ', updatedSkills);
                 //update skills and user age
-                await updateDoc(doc(db, 'users', uid),{
-                    skills: updatedSkills,
-                    age: updatedAge,
-                });
+                // await updateDoc(doc(db, 'users', uid),{
+                //     skills: updatedSkills,
+                // });
 
                 //clear the selected subject
                 setSelectedSubject(null);
 
                 //update user age
-                setUserAge(updatedAge)
         }
         catch(error){
             console.error('Error handling choosing subject: ', error)
@@ -76,25 +74,23 @@ const SchoolScreen = ({ UserLearnedSubjects , route }) => {
 
 
 
-    // function goBack(){
-    //     navigation.navigate('Home', {uid: uid});
-    // } property uid does not exist
-
     function goBack(){
-        navigation.goBack();
-        return;
-    }
-    return (
+        navigation.navigate('Home', {uid: uid});
+    } 
 
-        <View>
-
+    
+    if (!fontsLoaded) {
+        return <View />;
+      } else {
+        return (
+            <ImageBackground source={image} resizeMode="cover" style={styles.container}>
+                
             <View style={styles.backBtnContainer} >
-                <Pressable 
+                <GoBackButton 
                 onPress={goBack}>
-                    <Entypo name="back" size={40} color="black" />
-                </Pressable>
+                </GoBackButton>
             </View>
-            <View style={styles.container}>
+            <View style={styles.userInfoContainer}>
                 <Text>School Screen</Text>
                 <View>
                 {userAge >= 5 && (
@@ -134,29 +130,45 @@ const SchoolScreen = ({ UserLearnedSubjects , route }) => {
                     </View>
                 )}
                 </View>
-                
-
             </View>
-        </View>
-
-
-
-
+         </ImageBackground>  
     );
-};
+}};
 const styles = StyleSheet.create({
     container: {
-        padding: 20,
-        justifyContent: 'center',
+        flex: 1,
         alignItems: 'center',
+    },
+    textContainer: {
+        backgroundColor: '#51330B',
+        justifyContent: 'center',
+        padding: 20,
+        borderRadius: 10,
+        width: 220,
+        alignItems: 'center',
+        justifyContent: 'center',
+      },
+      userInfoContainer: {
+        borderColor: "#3B2105",
+            borderWidth: 2,
+          backgroundColor: '#EFE0BD',
+          padding: 10,
+        width: '80%',
+          marginTop: 8,
+          borderRadius: 6,
+          shadowColor: '#000',
+          shadowOffset: { width: 0, height: 2 },
+          shadowOpacity: 0.25,
+          shadowRadius: 3.84,
+          elevation: 5,
+          alignItems: 'center',
+        justifyContent: 'center',
     },
     backBtnContainer:{
         justifyContent: 'center',
         alignItems:'center',
-        borderWidth: 1,
         borderColor: 'black',
         borderRadius: 8,
-        backgroundColor: 'orange',
         padding: 0,
         marginTop: 50,
         marginRight: 50,
