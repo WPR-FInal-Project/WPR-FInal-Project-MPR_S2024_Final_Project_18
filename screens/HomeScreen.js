@@ -47,6 +47,8 @@ const HomeScreen = ({ navigation, route }) => {
     const [happiness, setHappiness] = useState(100);
     const [job, setJob] = useState({});
     const [relationship, setRelationship] = useState([]);
+    const [healthImpact, setHealthImpact] = useState(0);
+    const [salary, setSalary] = useState(0);
     const toggleUserModal = () => {
       setUserModalVisible(!userModalVisible);
     };
@@ -108,7 +110,7 @@ const HomeScreen = ({ navigation, route }) => {
           
         }
         fetchData();
-    }, [age, balance]);
+    }, [age, balance, health]);
 
     // update age every 12 minutes
     useEffect(() => {
@@ -163,12 +165,48 @@ const HomeScreen = ({ navigation, route }) => {
 
         const job = await getJob(currentUser.job);
         setJob(job);
+        setSalary(job.salary);
+        setHealthImpact(job.health_impact);
         // Add new skills to the skills array
       };
     }
       fetchData();
     }, [currentUser]);
-
+    useEffect(() => {
+      const duration = 60 * 1000; // 1 minute in milliseconds
+      const intervalTime = 1000; // Update frequency in milliseconds
+      const steps = duration / intervalTime; // Total number of steps
+      let step = 0; // Current step
+    
+      const interval = setInterval(() => {
+        step++;
+        if (step >= steps) {
+          step = 0; // Reset step to 0 when it reaches the total steps
+          // Perform the balance and health update here
+          updateBalanceAndHealth();
+        }
+      }, intervalTime);
+    
+      return () => clearInterval(interval);
+    }, [job]);
+    
+    const updateBalanceAndHealth = async () => {
+      try {
+        // Update balance by adding the salary
+        await updateDoc(doc(db, 'users', uid), {
+          balance: balance + salary,
+        });
+        setBalance(prevBalance => prevBalance + salary);
+    
+        // Update health by subtracting the health impact
+        await updateDoc(doc(db, 'users', uid), {
+          health: health - healthImpact,
+        });
+        setHealth(prevHealth => prevHealth - healthImpact);
+      } catch (error) {
+        console.error('Error updating balance and health:', error);
+      }
+    };
   
     // function to get user data from firestore
     async function getUser() {
@@ -189,7 +227,6 @@ const HomeScreen = ({ navigation, route }) => {
       const skillDocRef = doc(db, "skills", skillId.toString());
       const skillDoc = await getDoc(skillDocRef);
       if (skillDoc.exists()) {
-        console.log("Document data skill:", skillDoc.data());
         return skillDoc.data();
       } else {
         console.log("No such document!");
@@ -304,7 +341,7 @@ const HomeScreen = ({ navigation, route }) => {
 
               <View style={styles.buildingContainer}>
                 <View style={styles.building}>
-                  <Pressable onPress={() => navigation.navigate('Restaurant', {relationship: relationship, uid: uid})}
+                  <Pressable onPress={() => navigation.navigate('Restaurant', {relationship: relationship, uid: uid, skills: skills})}
                   disabled={age < 18}
                   style={{height: "100%", width: 200, alignSelf: 'flex-end', marginLeft: 200}}>
                   <LongLabel label='Restaurant' enable={age >= 18}/>
@@ -325,7 +362,7 @@ const HomeScreen = ({ navigation, route }) => {
                 <View style={styles.building}>
                   <Pressable onPress={() => navigation.navigate('RentalHouse')}
                     style={{height: "100%", width: 180}} />
-                  <Pressable onPress={() => navigation.navigate('Work', {uid: uid, skills: skills, job: job})}
+                  <Pressable onPress={() => navigation.navigate('Work', {uid: uid, skills: skills})}
                   disabled={age < 18}
                     style={{height: "100%", width: 200, alignSelf: 'flex-end', marginLeft: 20}}>
                       <LongLabel label='Office' enable={age >= 18}/>
