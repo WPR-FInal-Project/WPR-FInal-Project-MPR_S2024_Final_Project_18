@@ -28,7 +28,7 @@ const SchoolScreen = ({ navigation, route }) => {
     const [skillCost, setSkillcost] = useState(0);
 
     const [skills, setSkills] = useState([]);
-    const [userSkills, setUserSkills] = useState(route.params.skills);
+    const [userSkills, setUserSkills] = useState([]);
     const uid = route.params.uid; 
 
     const [balance, setBalance] = useState(route.params.balance);
@@ -54,7 +54,6 @@ const SchoolScreen = ({ navigation, route }) => {
                 const skillsCollection = collection(db, 'skills');
                 const skillsSnapshot = await getDocs(skillsCollection);
                 const skillsList = skillsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                skillsSnapshot.docs.map(doc => console.log(doc.data()));
 
                 setSkills(skillsList);
             };
@@ -131,13 +130,13 @@ const SchoolScreen = ({ navigation, route }) => {
           const learnSkill = async (skillId) => {
             try {
                 // Retrieve the skill information based on skillId
-                const skillRef = doc(db, 'skills', skillId);
+                const skillRef = doc(db, 'skills', skillId.toString());
                 const skillDocSnap = await getDoc(skillRef);
+
         
                 if (skillDocSnap.exists()) {
                     const skillData = skillDocSnap.data();
                     const skillCost = skillData.cost;
-        
                     // Check if the user has enough balance to learn the skill
                     if (balance >= skillCost) {
                         // Deduct the cost of the skill from the user's balance
@@ -171,6 +170,7 @@ const SchoolScreen = ({ navigation, route }) => {
 
         const checkSkillExists = (skillId) => {
             // Check if the skillId exists in the userSkills array
+            
             return userSkills.includes(skillId);
             // Update the state with the boolean value indicating if the skill exists
             
@@ -215,6 +215,8 @@ const SchoolScreen = ({ navigation, route }) => {
                         {age < 18 && (
                             <>
                             <View style={{flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginBottom: 20}}>
+                            <Text style={{color: '#51330B', fontSize: 30, fontFamily: 'Itim_400Regular'}}>Get </Text>
+
                                 <ButtonOrange disabled={false} onPress={selectQuestion}>
                                     <Text style={{color: 'white', fontSize: 25, fontFamily: 'Itim_400Regular'}}>Question</Text>
                                 </ButtonOrange >
@@ -254,7 +256,8 @@ const SchoolScreen = ({ navigation, route }) => {
                                             toggleConfirmSkillLearnModalVisible();
                                             setSkillId(item.id);
                                             setSkillName(item.name)
-                                            setSkillcost(item.cost)}}>
+                                            setSkillcost(item.cost)
+                                            }}>
                                                 <Text style={{ fontFamily: 'Itim_400Regular', fontSize: 25, color: 'black', marginBottom: 5 }}>
                                                     {item.name}
                                                 </Text>

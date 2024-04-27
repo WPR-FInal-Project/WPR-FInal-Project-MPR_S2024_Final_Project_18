@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, Button, StyleSheet, Pressable } from 'react-native';
+import { View, Text, TextInput, Button, StyleSheet, Pressable, Platform } from 'react-native';
 import { setDoc, doc, getDoc } from "firebase/firestore";
 import { db } from "../config/firebase.js";
 import { auth } from '../config/firebase.js';
@@ -132,7 +132,7 @@ const styles = StyleSheet.create({
         fontSize: 30,
         width: '90%',
         color: '#692600',
-        marginBottom: 16,
+        marginBottom: Platform.OS === 'ios' ? 50 : 20,
         padding: 10,
         borderRadius: 10,
         backgroundColor: 'white',
@@ -140,12 +140,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent  : 'center',
     },
-    inputGender: {
-        height: 40,
-        borderColor: 'gray',
-        borderWidth: 1,
-        marginBottom: 16,
-    },
+    
     BottomButtons: {
         
         marginTop: 50,

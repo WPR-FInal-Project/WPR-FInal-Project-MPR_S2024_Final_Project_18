@@ -93,6 +93,7 @@ const WorkScreen = ({ navigation, route }) => {
                 setHappiness(userData.happiness);
                 setHealth(userData.health);
                 setBalance(userData.balance);
+                
             } else {
                 console.error("User document does not exist");
             }

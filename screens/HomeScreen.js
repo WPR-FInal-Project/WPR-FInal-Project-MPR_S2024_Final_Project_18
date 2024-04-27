@@ -47,7 +47,7 @@ const HomeScreen = ({ navigation, route }) => {
     const [happiness, setHappiness] = useState(100);
     const [job, setJob] = useState({});
 
-    const [house, setHouse] = useState({});
+    const [house, setHouse] = useState(0);
 
     const [relationship, setRelationship] = useState([]);
     const [healthImpact, setHealthImpact] = useState(0);
@@ -108,7 +108,7 @@ const HomeScreen = ({ navigation, route }) => {
     // retrieve user data from firestore, each time the attribute change
     useEffect(() => {
         const fetchData = async () => {
-          setSkills([]);
+          
           const user = await getUser();
           setCurrentUser(user);
           setAge(user.age);
@@ -124,7 +124,7 @@ const HomeScreen = ({ navigation, route }) => {
 
     // update age every 12 minutes
     useEffect(() => {
-      const duration =  12 * 10 * 1000; // 1 minute in milliseconds
+      const duration =  12 * 60 * 1000; // 1 minute in milliseconds
       const intervalTime = 100; // Update frequency in milliseconds
       const steps = duration / intervalTime; // Total number of steps
       let step = 0; // Current step
@@ -163,7 +163,6 @@ const HomeScreen = ({ navigation, route }) => {
     useEffect(() => {
       const fetchData = async () => {
         if (currentUser && currentUser.skills) { // Check if currentUser and skills exist
-        
           // Get all skills from the user's skills array
         const newSkills = await Promise.all(currentUser.skills.map(getSkill));
         
@@ -172,7 +171,6 @@ const HomeScreen = ({ navigation, route }) => {
           return !skills.some(existingSkill => existingSkill.id === skill.id);
         });
         setSkills(prevSkills => [...prevSkills, ...filteredNewSkills]);
-
         const job = await getJob(currentUser.job);
         const house = await getHouse(currentUser.house);
         setHouse(house);
@@ -185,7 +183,7 @@ const HomeScreen = ({ navigation, route }) => {
       fetchData();
     }, [currentUser]);
     useEffect(() => {
-      const duration = 5 * 1000; // 1 minute in milliseconds
+      const duration = 60 * 1000; // 1 minute in milliseconds
       const intervalTime = 1000; // Update frequency in milliseconds
       const steps = duration / intervalTime; // Total number of steps
       let step = 0; // Current step
@@ -224,7 +222,6 @@ const HomeScreen = ({ navigation, route }) => {
     async function getUser() {
       const docSnap = await getDoc(usersDocRef)
       if (docSnap.exists()) {
-        console.log("user from getUser:", docSnap.data());
 
         return docSnap.data();
       } else {
