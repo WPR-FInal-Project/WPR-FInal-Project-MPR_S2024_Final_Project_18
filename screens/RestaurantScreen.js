@@ -38,7 +38,6 @@ const RestaurantScreen = ({ navigation, route }) => {
             const npcSnapshot = await getDocs(npcCollection);
             const npcList = npcSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
             setNpcs(npcList);
-            console.log('NPCs fetched successfully:', npcList)
         };
         fetchNpcs();
         relationshipFetch(); // Fetch relationship data when component mounts
@@ -171,7 +170,6 @@ const RestaurantScreen = ({ navigation, route }) => {
                             key={npc.id}
                             disabled={false}
                             onPress={() => {
-                                console.log(npc.name)
                                 toggleConfirmDateModalVisible();
                                 setNpcName(npc.name);
                                 setNpcId(npc.id)}}>

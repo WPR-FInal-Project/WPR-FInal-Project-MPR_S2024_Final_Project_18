@@ -3,10 +3,7 @@ import { View, Text, StyleSheet, Pressable, Image, ImageBackground, Platform, Fl
 import { doc, getDoc, collection, query, where, getDocs, setDoc, updateDoc } from "firebase/firestore";
 import { useFonts, Itim_400Regular } from '@expo-google-fonts/itim';
 import Header from '../components/Header';
-import Entypo from 'react-native-vector-icons/Entypo';
 import { db } from '../config/firebase';
-import ButtonOrange from '../components/ButtonOrange';
-import { set } from 'firebase/database';
 import GoBackButton from '../components/GoBackButton';
 import JobApplyModal from '../components/JobApplyModal';
 
@@ -42,11 +39,10 @@ const WorkScreen = ({ navigation, route }) => {
             const jobList = jobSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
             setJobs(jobList);
-            
 
         };
         fetchJobs();
-        userInfoFetch(); // Fetch relationship data when component mounts
+        userInfoFetch(); 
 
     }, [balance]);
 
@@ -57,33 +53,6 @@ const WorkScreen = ({ navigation, route }) => {
             updateDoc(doc(db, 'users', uid), {
                 job: jobId,
             });
-          
-        // try {
-        //     // Determine the index of the NPC in the npcs array
-        //     const npcIndex = npcs.findIndex(npc => npc.id === id);
-        //     if (npcIndex === -1) {
-        //         console.error(`NPC with id: ${id} not found`);
-        //         return;
-        //     }
-    
-        //     // Update the user's relationship attribute based on the NPC name
-        //     const updatedRelationship = [...relationship]; // Create a copy of the relationship array
-        //     updatedRelationship[npcIndex] = updatedRelationship[npcIndex] + 1; // Increment the relationship value
-        //     await updateDoc(doc(db, 'users', uid), {
-        //         relationship: updatedRelationship,
-        //         happiness: happiness + 10,
-        //         balance: balance - 10,
-        //     });
-    
-        //     // Update the state to reflect the changes
-        //     setRelationship(updatedRelationship);
-        //     setBalance(balance - 10);
-        //     setHappiness(happiness + 10);
-    
-        //     console.log(`Relationship with NPC ${id} updated successfully`);
-        // } catch (error) {
-        //     console.error("Error updating relationship:", error);
-        // }
     };
 
     const checkSkillsMatch = (requiredSkills, userSkills) => {
@@ -120,18 +89,11 @@ const WorkScreen = ({ navigation, route }) => {
             const userDocSnap = await getDoc(userDocRef);
             if (userDocSnap.exists()) {
                 const userData = userDocSnap.data();
-                // if (userData.skills) {
-                //     // If relationship data exists in the user document, set it in the state
-                //     setRelationship(userData.relationship);
-
-                // } else {
-                //     // If relationship data does not exist, initialize it with default values
-                //     const defaultRelationship = [0, 0, 0]; // Assuming 3 NPCs
-                //     setRelationship(defaultRelationship);
-                // }
+                
                 setHappiness(userData.happiness);
                 setHealth(userData.health);
                 setBalance(userData.balance);
+                
             } else {
                 console.error("User document does not exist");
             }
@@ -171,10 +133,7 @@ const WorkScreen = ({ navigation, route }) => {
             <View style={{ width: '95%', marginTop: 10 }}>
             <GoBackButton 
             onPress={goBack}/>  
-            {/* <View style={styles.skillsContainer}>
-            <View><Text style={[styles.text, {color: '#51330B'}]}>Your skills: </Text></View>
-
-                </View>  */}
+            
             </View>
             
             <View style={styles.jobsAllContainer}>
@@ -190,35 +149,7 @@ const WorkScreen = ({ navigation, route }) => {
                     <Text style={{color: '#EFE0BD', fontSize: 35, fontFamily: 'Itim_400Regular'}}>Apply for job: </Text>
                 </View>
                 <View style={{flexDirection: 'row'}}>
-                    {/* <View>
-                        <View style={styles.loveLevel}> 
-                        <Entypo name="heart" size={24} color="white" />
-                            <Text style={{color: 'white', fontSize: 30, fontFamily: 'Itim_400Regular', marginLeft: 10}}>{relationship[0]}</Text>
-                        </View>
-                        <View style={styles.imageContainer}>
-                        <Image source={aliceImg} resizeMode='contain' style={styles.image}></Image>
-                        </View>
-                    </View>
-
-                    <View>
-                        <View style={styles.loveLevel}>
-                            <Entypo name="heart" size={24} color="white" />
-                            <Text style={{color: 'white', fontSize: 30, fontFamily: 'Itim_400Regular', marginLeft: 10}}>{relationship[1]}</Text>
-                        </View>
-                        <View style={styles.imageContainer}>
-                            <Image source={rachelImg} resizeMode='contain' style={styles.image}></Image>
-                        </View>
-                    </View>
-
-                    <View>
-                        <View style={styles.loveLevel}>
-                            <Entypo name="heart" size={24} color="white" />
-                            <Text style={{color: 'white', fontSize: 30, fontFamily: 'Itim_400Regular', marginLeft: 10}}>{relationship[2]}</Text>
-                        </View>
-                        <View style={styles.imageContainer}>
-                        <Image source={bobImg} resizeMode='contain' style={styles.image}></Image>
-                        </View>
-                    </View> */}
+                
                     
                 </View>
                 <View style={{flexDirection: 'column', width: '95%', gap: Platform.OS === 'ios' ? 5 : null, maxHeight: 400, borderWidth: 4, borderRadius: 6, borderColor: '#51330B', padding: 10}}>

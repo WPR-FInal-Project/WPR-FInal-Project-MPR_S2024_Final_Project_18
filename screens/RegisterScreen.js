@@ -52,6 +52,7 @@ const RegisterScreen = ({navigation}) => {
             age: 0,
             skills: [],
             job: 0,
+            house: 0,
             health: 100,
             happiness: 100,
             last_login: 0,

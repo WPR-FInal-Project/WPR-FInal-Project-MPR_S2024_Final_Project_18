@@ -46,6 +46,9 @@ const HomeScreen = ({ navigation, route }) => {
     const [health, setHealth] = useState(100);
     const [happiness, setHappiness] = useState(100);
     const [job, setJob] = useState({});
+
+    const [house, setHouse] = useState(0);
+
     const [relationship, setRelationship] = useState([]);
     const [healthImpact, setHealthImpact] = useState(0);
     const [salary, setSalary] = useState(0);
@@ -84,11 +87,17 @@ const HomeScreen = ({ navigation, route }) => {
           setSkills([]);
           const user = await getUser();
           setCurrentUser(user);
+          console.log("currentUser:", currentUser);
+
+          // Add console.log to check the value of currentUser.age
+          console.log("currentUser.age:", currentUser.age);
           setAge(user.age);
           setBalance(user.balance);
           setHealth(user.health);
           setHappiness(user.happiness);
           setLoading(false);
+          setHouse(user.house);
+          setJob(user.job);
         }
         fetchData();
       });
@@ -99,7 +108,7 @@ const HomeScreen = ({ navigation, route }) => {
     // retrieve user data from firestore, each time the attribute change
     useEffect(() => {
         const fetchData = async () => {
-          setSkills([]);
+          
           const user = await getUser();
           setCurrentUser(user);
           setAge(user.age);
@@ -107,7 +116,8 @@ const HomeScreen = ({ navigation, route }) => {
           setHealth(user.health);
           setHappiness(user.happiness);
           setLoading(false);
-          
+          // setHouse(user.house);
+          // setJob(user.job);
         }
         fetchData();
     }, [age, balance, health]);
@@ -153,7 +163,6 @@ const HomeScreen = ({ navigation, route }) => {
     useEffect(() => {
       const fetchData = async () => {
         if (currentUser && currentUser.skills) { // Check if currentUser and skills exist
-        
           // Get all skills from the user's skills array
         const newSkills = await Promise.all(currentUser.skills.map(getSkill));
         
@@ -162,11 +171,12 @@ const HomeScreen = ({ navigation, route }) => {
           return !skills.some(existingSkill => existingSkill.id === skill.id);
         });
         setSkills(prevSkills => [...prevSkills, ...filteredNewSkills]);
-
         const job = await getJob(currentUser.job);
+        const house = await getHouse(currentUser.house);
+        setHouse(house);
         setJob(job);
         setSalary(job.salary);
-        setHealthImpact(job.health_impact);
+        
         // Add new skills to the skills array
       };
     }
@@ -188,21 +198,21 @@ const HomeScreen = ({ navigation, route }) => {
       }, intervalTime);
     
       return () => clearInterval(interval);
-    }, [job]);
+    }, [job, house]);
     
     const updateBalanceAndHealth = async () => {
       try {
         // Update balance by adding the salary
         await updateDoc(doc(db, 'users', uid), {
-          balance: balance + salary,
+          balance: balance + salary - house.rental_rate,
+          health: health - healthImpact + house.health_impact,
+          happiness: happiness + house.happiness_impact,
+
         });
-        setBalance(prevBalance => prevBalance + salary);
-    
-        // Update health by subtracting the health impact
-        await updateDoc(doc(db, 'users', uid), {
-          health: health - healthImpact,
-        });
-        setHealth(prevHealth => prevHealth - healthImpact);
+        setBalance(prevBalance => prevBalance + salary - house.rental_rate);
+        setHealth(prevHealth => prevHealth + house.health_impact);
+        setHappiness(prevHappiness => prevHappiness + house.happiness_impact);
+
       } catch (error) {
         console.error('Error updating balance and health:', error);
       }
@@ -212,10 +222,11 @@ const HomeScreen = ({ navigation, route }) => {
     async function getUser() {
       const docSnap = await getDoc(usersDocRef)
       if (docSnap.exists()) {
+
         return docSnap.data();
       } else {
         // docSnap.data() will be undefined in this case
-        console.log("No such document!");
+        docSnap = await getDoc(usersDocRef)
       }
     }
 
@@ -247,6 +258,19 @@ const HomeScreen = ({ navigation, route }) => {
       }
     }
 
+    async function getHouse(houseId) {
+      if (houseId === undefined) {
+        throw new Error("House ID is undefined");
+      }
+      const HouseDoc = await getDoc(doc(db, "Houses", houseId.toString()));
+      if (HouseDoc.exists()) {
+        return HouseDoc.data();
+      } else {
+        console.log("No such document!");
+        throw new Error(`No document with ID ${houseId}`);
+      }
+    }
+
     // function to update user data in firestore
     const signOut = () => {
         auth.signOut().then(() => {
@@ -274,8 +298,9 @@ const HomeScreen = ({ navigation, route }) => {
             health: 100,
             happiness: 100,
             relationship: [0,0,0],
+            house: 0
       });
-      setAge(0);
+      setAge(0)
     }
 
     const handleReachEighteen = async () => {
@@ -315,7 +340,7 @@ const HomeScreen = ({ navigation, route }) => {
                
             <DailyRewardModal isVisible={dailyRewardModalVisible} 
             toggleFunction={toggleDailyRewardModal} 
-            streak={currentUser.daily_login_streak}/>
+            />
 
             <ResetModal 
             isVisible={resetModalVisible} 
@@ -351,7 +376,7 @@ const HomeScreen = ({ navigation, route }) => {
 
                 <View style={styles.building}>
                   <Pressable onPress={() => 
-                  navigation.navigate('School', {user: currentUser, skills: skills})}
+                  navigation.navigate('School', {userAge: currentUser.age, skills: skills, uid: uid, balance: balance, health: health, happiness: happiness})}
                   
                   style={{height: "100%", width: 180}} >
                   <LongLabel label='School' enable={true}/>
@@ -371,7 +396,7 @@ const HomeScreen = ({ navigation, route }) => {
                 </View>
 
                 <View style={styles.building}>
-                  <Pressable onPress={() => navigation.navigate('RentalHouse')}
+                  <Pressable onPress={() => navigation.navigate('RentalHouse', {uid: uid})}
                   disabled={age < 18}
                   style={{height: "100%", width: 180}} >
                     <LongLabel label='House' enable={age >= 18}/>
