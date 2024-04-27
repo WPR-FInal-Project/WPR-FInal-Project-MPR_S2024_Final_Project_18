@@ -46,7 +46,9 @@ const HomeScreen = ({ navigation, route }) => {
     const [health, setHealth] = useState(100);
     const [happiness, setHappiness] = useState(100);
     const [job, setJob] = useState({});
+
     const [house, setHouse] = useState({});
+
     const [relationship, setRelationship] = useState([]);
     const [healthImpact, setHealthImpact] = useState(0);
     const [salary, setSalary] = useState(0);
@@ -85,12 +87,17 @@ const HomeScreen = ({ navigation, route }) => {
           setSkills([]);
           const user = await getUser();
           setCurrentUser(user);
+          console.log("currentUser:", currentUser);
+
+          // Add console.log to check the value of currentUser.age
+          console.log("currentUser.age:", currentUser.age);
           setAge(user.age);
           setBalance(user.balance);
           setHealth(user.health);
           setHappiness(user.happiness);
           setLoading(false);
           setHouse(user.house);
+          setJob(user.job);
         }
         fetchData();
       });
@@ -109,14 +116,15 @@ const HomeScreen = ({ navigation, route }) => {
           setHealth(user.health);
           setHappiness(user.happiness);
           setLoading(false);
-          setHouse(user.house);
+          // setHouse(user.house);
+          // setJob(user.job);
         }
         fetchData();
     }, [age, balance, health]);
 
     // update age every 12 minutes
     useEffect(() => {
-      const duration =  12 * 1 * 1000; // 1 minute in milliseconds
+      const duration =  12 * 10 * 1000; // 1 minute in milliseconds
       const intervalTime = 100; // Update frequency in milliseconds
       const steps = duration / intervalTime; // Total number of steps
       let step = 0; // Current step
@@ -170,15 +178,14 @@ const HomeScreen = ({ navigation, route }) => {
         setHouse(house);
         setJob(job);
         setSalary(job.salary);
-        setHealthImpact(job.health_impact);
+        
         // Add new skills to the skills array
       };
     }
       fetchData();
-    }, [currentUser, skills]);
-
+    }, [currentUser]);
     useEffect(() => {
-      const duration = 60 * 1000; // 1 minute in milliseconds
+      const duration = 5 * 1000; // 1 minute in milliseconds
       const intervalTime = 1000; // Update frequency in milliseconds
       const steps = duration / intervalTime; // Total number of steps
       let step = 0; // Current step
@@ -200,20 +207,13 @@ const HomeScreen = ({ navigation, route }) => {
         // Update balance by adding the salary
         await updateDoc(doc(db, 'users', uid), {
           balance: balance + salary - house.rental_rate,
-        });
-
-        setBalance(prevBalance => prevBalance + salary - house.rental_rate);
-        
-        // Update health by subtracting the health impact
-        await updateDoc(doc(db, 'users', uid), {
           health: health - healthImpact + house.health_impact,
-        });
-        setHealth(prevHealth => prevHealth - healthImpact + house.health_impact);
-
-        await updateDoc(doc(db, 'users', uid), {
           happiness: happiness + house.happiness_impact,
+
         });
-        setHealth(prevHappiness => prevHappiness + house.happiness_impact);
+        setBalance(prevBalance => prevBalance + salary - house.rental_rate);
+        setHealth(prevHealth => prevHealth + house.health_impact);
+        setHappiness(prevHappiness => prevHappiness + house.happiness_impact);
 
       } catch (error) {
         console.error('Error updating balance and health:', error);
@@ -224,10 +224,12 @@ const HomeScreen = ({ navigation, route }) => {
     async function getUser() {
       const docSnap = await getDoc(usersDocRef)
       if (docSnap.exists()) {
+        console.log("user from getUser:", docSnap.data());
+
         return docSnap.data();
       } else {
         // docSnap.data() will be undefined in this case
-        console.log("No such document!");
+        docSnap = await getDoc(usersDocRef)
       }
     }
 
@@ -299,9 +301,9 @@ const HomeScreen = ({ navigation, route }) => {
             health: 100,
             happiness: 100,
             relationship: [0,0,0],
-            house: 0,
+            house: 0
       });
-      setAge(0);
+      setAge(0)
     }
 
     const handleReachEighteen = async () => {
@@ -310,12 +312,11 @@ const HomeScreen = ({ navigation, route }) => {
         balance: user.balance + 10000,
       });
       setDoc(doc(db, 'users', uid), { 
-        relationship: [0,0,0],
-        house: 0
+        relationship: [0,0,0]
       }, { merge: true });
       setBalance(user.balance + 10000);
       setRelationship(user.relationship);
-      setHouse(0);
+      
     }
     if (!fontsLoaded) {
       return <View />;
@@ -342,7 +343,7 @@ const HomeScreen = ({ navigation, route }) => {
                
             <DailyRewardModal isVisible={dailyRewardModalVisible} 
             toggleFunction={toggleDailyRewardModal} 
-            streak={currentUser.daily_login_streak}/>
+            />
 
             <ResetModal 
             isVisible={resetModalVisible} 
@@ -378,7 +379,7 @@ const HomeScreen = ({ navigation, route }) => {
 
                 <View style={styles.building}>
                   <Pressable onPress={() => 
-                  navigation.navigate('School', {user: currentUser, skills: skills})}
+                  navigation.navigate('School', {userAge: currentUser.age, skills: skills, uid: uid, balance: balance, health: health, happiness: happiness})}
                   
                   style={{height: "100%", width: 180}} >
                   <LongLabel label='School' enable={true}/>
@@ -387,7 +388,7 @@ const HomeScreen = ({ navigation, route }) => {
                 </View>
 
                 <View style={styles.building}>
-                  <Pressable onPress={() => navigation.navigate('RentalHouse', {uid: uid})}
+                  <Pressable onPress={() => navigation.navigate('RentalHouse')}
                     style={{height: "100%", width: 180}} />
                   <Pressable onPress={() => navigation.navigate('Work', {uid: uid, skills: skills})}
                   disabled={age < 18}

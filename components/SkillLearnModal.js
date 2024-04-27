@@ -1,10 +1,10 @@
 import { child } from 'firebase/database';
 import React from 'react';
-import { View, Pressable, StyleSheet, Text } from 'react-native';
+import { View, StyleSheet, Text, Platform } from 'react-native';
 import Modal from "react-native-modal";
 import { useFonts, Itim_400Regular } from '@expo-google-fonts/itim';
-
-const DailyRewardModal = ({ isVisible, toggleFunction }) => {
+import ButtonOrange from './ButtonOrange';
+const SkillLearnModal = ({ isVisible, toggleFunction, confirmFunction, name, cost, disable,}) => {
   let [fontsLoaded] = useFonts({
     Itim_400Regular,
   });
@@ -15,29 +15,33 @@ return (
     <Modal isVisible={isVisible} style={styles.modalContainer}>
       
       <View style={styles.modal}>
-      <Text style={{fontFamily: 'Itim_400Regular', fontSize: 35, color: 'white', fontWeight: '600'}}>Congratulation!</Text>    
-
+      <View style={styles.userInfoContainer}>
+      <Text style={[styles.text, {color: '#51330B', fontSize: 25}]}>Learn {name}? </Text>
+      </View>
         <View style={styles.userInfoContainer}>
-            <View style={styles.textContainer}>
-                <Text style={styles.text}>Daily login streak </Text>
-            </View>
-        </View>
-
-        <View style={styles.userInfoContainer}>
-            <View><Text style={[styles.text, {color: '#51330B'}]}>Reward</Text></View>
 
             <View style={styles.textContainer}>
-              <Text style={styles.text}>+100 gold</Text>
+                <View style={styles.textContainer}>
+                <Text style={styles.text}>Tution Fee:  {cost} </Text>
+
+                </View>
+                
+
             </View>
         </View>
-                  
-                  <View style={[styles.BottomButtons, {alignSelf: 'center'}]}>
-                    <View style={[styles.buttonWrapper]}>
-                      <Pressable style={styles.button} onPress={toggleFunction}>
-                        <Text style={{color: 'white', fontSize: 30, fontFamily: 'Itim_400Regular'}}>Close</Text>
-                      </Pressable>
-                    </View>
-                  </View>
+        <View style={[styles.BottomButtons, {alignSelf: 'center', justifyContent:'flex-end', flex: 1, marginBottom: 20}]}>
+                <ButtonOrange onPress={toggleFunction} disabled={false}>
+                    <Text style={{color: 'white', fontSize: 30, fontFamily: 'Itim_400Regular'}}>No</Text>
+                  </ButtonOrange>
+                  <View style={{width: 30}}></View>
+                  <ButtonOrange onPress={() => {
+                    confirmFunction();
+                    toggleFunction()
+                  }} disabled={disable}>
+                    <Text style={{color: 'white', fontSize: 30, fontFamily: 'Itim_400Regular'}}>Yes</Text>
+
+                  </ButtonOrange>     
+        </View>          
       </View>
     </Modal>
 );
@@ -47,7 +51,9 @@ return (
 const styles = StyleSheet.create({
     BottomButtons: {
         height: 70,
+        
         marginTop: 20,
+        flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',
         shadowColor: "#000",
@@ -60,24 +66,6 @@ const styles = StyleSheet.create({
               elevation: 40,
               zIndex:999,
       },
-      button:{ 
-        backgroundColor: '#F14C01',
-        borderBottomWidth: 2, 
-        alignItems: 'center',
-        width: 110,
-        borderRadius: 10,
-        justifyContent: 'center',
-        height: '85%', 
-        borderBottomColor: '#FFE472', 
-        backgroundColor: '#F58D34'
-      },
-      buttonWrapper: {
-        height: '90%', 
-        backgroundColor: '#C54319', 
-        borderRadius: 10, 
-         borderColor: '#692600', 
-        borderWidth: 2
-      },
       container: {
         flex: 1,
         backgroundColor: '#fff',
@@ -86,16 +74,16 @@ const styles = StyleSheet.create({
       },
         textContainer: {
         backgroundColor: '#51330B',
-        justifyContent: 'center',
-        padding: 20,
+        
+        padding: Platform.OS === 'ios' ? 8 : 4,
         borderRadius: 10,
-        width: 210,
+        width: '95%',
         alignItems: 'center',
-        justifyContent: 'center',
+        
       },
       text: {
         fontFamily: 'Itim_400Regular',
-        fontSize: 26,
+        fontSize: 22,
         color: '#EFE0BD',
         
       },
@@ -104,7 +92,7 @@ const styles = StyleSheet.create({
             borderWidth: 2,
           backgroundColor: '#EFE0BD',
           padding: 10,
-        
+            width: '95%',
           marginTop: 8,
           borderRadius: 6,
           shadowColor: '#000',
@@ -127,15 +115,13 @@ const styles = StyleSheet.create({
       backgroundColor: '#F1B564',
       borderRadius: 10,
       borderColor: '#692600',
-      
       borderWidth: 5,
       borderRadius: 10,
-      width: '90%',
-      height: '60%',
+      width: '95%',
+      height: '40%',
       padding: 6,
-      alignItems: 'center',
-        justifyContent: 'center',
+      
     }
       
 });
-export default DailyRewardModal;
+export default SkillLearnModal;

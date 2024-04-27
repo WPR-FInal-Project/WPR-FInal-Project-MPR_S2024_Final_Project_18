@@ -4,7 +4,7 @@ import { View, Pressable, StyleSheet, Text } from 'react-native';
 import Modal from "react-native-modal";
 import { useFonts, Itim_400Regular } from '@expo-google-fonts/itim';
 
-const DailyRewardModal = ({ isVisible, toggleFunction }) => {
+const ResultModal = ({ isVisible, toggleFunction, result }) => {
   let [fontsLoaded] = useFonts({
     Itim_400Regular,
   });
@@ -15,21 +15,14 @@ return (
     <Modal isVisible={isVisible} style={styles.modalContainer}>
       
       <View style={styles.modal}>
-      <Text style={{fontFamily: 'Itim_400Regular', fontSize: 35, color: 'white', fontWeight: '600'}}>Congratulation!</Text>    
 
         <View style={styles.userInfoContainer}>
             <View style={styles.textContainer}>
-                <Text style={styles.text}>Daily login streak </Text>
+                <Text style={styles.text}>{result} </Text>
             </View>
         </View>
 
-        <View style={styles.userInfoContainer}>
-            <View><Text style={[styles.text, {color: '#51330B'}]}>Reward</Text></View>
-
-            <View style={styles.textContainer}>
-              <Text style={styles.text}>+100 gold</Text>
-            </View>
-        </View>
+        
                   
                   <View style={[styles.BottomButtons, {alignSelf: 'center'}]}>
                     <View style={[styles.buttonWrapper]}>
@@ -131,11 +124,11 @@ const styles = StyleSheet.create({
       borderWidth: 5,
       borderRadius: 10,
       width: '90%',
-      height: '60%',
+      height: '40%',
       padding: 6,
       alignItems: 'center',
         justifyContent: 'center',
     }
       
 });
-export default DailyRewardModal;
+export default ResultModal;
