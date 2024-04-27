@@ -46,6 +46,7 @@ const HomeScreen = ({ navigation, route }) => {
     const [health, setHealth] = useState(100);
     const [happiness, setHappiness] = useState(100);
     const [job, setJob] = useState({});
+    const [house, setHouse] = useState({});
     const [relationship, setRelationship] = useState([]);
     const [healthImpact, setHealthImpact] = useState(0);
     const [salary, setSalary] = useState(0);
@@ -89,6 +90,7 @@ const HomeScreen = ({ navigation, route }) => {
           setHealth(user.health);
           setHappiness(user.happiness);
           setLoading(false);
+          setHouse(user.house);
         }
         fetchData();
       });
@@ -107,14 +109,14 @@ const HomeScreen = ({ navigation, route }) => {
           setHealth(user.health);
           setHappiness(user.happiness);
           setLoading(false);
-          
+          setHouse(user.house);
         }
         fetchData();
     }, [age, balance, health]);
 
     // update age every 12 minutes
     useEffect(() => {
-      const duration =  12 * 60 * 1000; // 1 minute in milliseconds
+      const duration =  12 * 1 * 1000; // 1 minute in milliseconds
       const intervalTime = 100; // Update frequency in milliseconds
       const steps = duration / intervalTime; // Total number of steps
       let step = 0; // Current step
@@ -164,6 +166,8 @@ const HomeScreen = ({ navigation, route }) => {
         setSkills(prevSkills => [...prevSkills, ...filteredNewSkills]);
 
         const job = await getJob(currentUser.job);
+        const house = await getHouse(currentUser.house);
+        setHouse(house);
         setJob(job);
         setSalary(job.salary);
         setHealthImpact(job.health_impact);
@@ -171,7 +175,8 @@ const HomeScreen = ({ navigation, route }) => {
       };
     }
       fetchData();
-    }, [currentUser]);
+    }, [currentUser, skills]);
+
     useEffect(() => {
       const duration = 60 * 1000; // 1 minute in milliseconds
       const intervalTime = 1000; // Update frequency in milliseconds
@@ -188,21 +193,28 @@ const HomeScreen = ({ navigation, route }) => {
       }, intervalTime);
     
       return () => clearInterval(interval);
-    }, [job]);
+    }, [job, house]);
     
     const updateBalanceAndHealth = async () => {
       try {
         // Update balance by adding the salary
         await updateDoc(doc(db, 'users', uid), {
-          balance: balance + salary,
+          balance: balance + salary - house.rental_rate,
         });
-        setBalance(prevBalance => prevBalance + salary);
-    
+
+        setBalance(prevBalance => prevBalance + salary - house.rental_rate);
+        
         // Update health by subtracting the health impact
         await updateDoc(doc(db, 'users', uid), {
-          health: health - healthImpact,
+          health: health - healthImpact + house.health_impact,
         });
-        setHealth(prevHealth => prevHealth - healthImpact);
+        setHealth(prevHealth => prevHealth - healthImpact + house.health_impact);
+
+        await updateDoc(doc(db, 'users', uid), {
+          happiness: happiness + house.happiness_impact,
+        });
+        setHealth(prevHappiness => prevHappiness + house.happiness_impact);
+
       } catch (error) {
         console.error('Error updating balance and health:', error);
       }
@@ -247,6 +259,19 @@ const HomeScreen = ({ navigation, route }) => {
       }
     }
 
+    async function getHouse(houseId) {
+      if (houseId === undefined) {
+        throw new Error("House ID is undefined");
+      }
+      const HouseDoc = await getDoc(doc(db, "Houses", houseId.toString()));
+      if (HouseDoc.exists()) {
+        return HouseDoc.data();
+      } else {
+        console.log("No such document!");
+        throw new Error(`No document with ID ${houseId}`);
+      }
+    }
+
     // function to update user data in firestore
     const signOut = () => {
         auth.signOut().then(() => {
@@ -274,6 +299,7 @@ const HomeScreen = ({ navigation, route }) => {
             health: 100,
             happiness: 100,
             relationship: [0,0,0],
+            house: 0,
       });
       setAge(0);
     }
@@ -284,11 +310,12 @@ const HomeScreen = ({ navigation, route }) => {
         balance: user.balance + 10000,
       });
       setDoc(doc(db, 'users', uid), { 
-        relationship: [0,0,0]
+        relationship: [0,0,0],
+        house: 0
       }, { merge: true });
       setBalance(user.balance + 10000);
       setRelationship(user.relationship);
-      
+      setHouse(0);
     }
     if (!fontsLoaded) {
       return <View />;
@@ -360,7 +387,7 @@ const HomeScreen = ({ navigation, route }) => {
                 </View>
 
                 <View style={styles.building}>
-                  <Pressable onPress={() => navigation.navigate('RentalHouse')}
+                  <Pressable onPress={() => navigation.navigate('RentalHouse', {uid: uid})}
                     style={{height: "100%", width: 180}} />
                   <Pressable onPress={() => navigation.navigate('Work', {uid: uid, skills: skills})}
                   disabled={age < 18}
@@ -371,7 +398,7 @@ const HomeScreen = ({ navigation, route }) => {
                 </View>
 
                 <View style={styles.building}>
-                  <Pressable onPress={() => navigation.navigate('RentalHouse')}
+                  <Pressable onPress={() => navigation.navigate('RentalHouse', {uid: uid})}
                   disabled={age < 18}
                   style={{height: "100%", width: 180}} >
                     <LongLabel label='House' enable={age >= 18}/>

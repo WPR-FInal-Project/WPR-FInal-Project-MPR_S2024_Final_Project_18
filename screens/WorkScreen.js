@@ -13,7 +13,7 @@ import JobApplyModal from '../components/JobApplyModal';
 const image = (require('../assets/images/restaurant.jpg'));
 
 
-const RestaurantScreen = ({ navigation, route }) => {
+const WorkScreen = ({ navigation, route }) => {
     const [jobs, setJobs] = useState([]);
     const [confirmJobApplyVisible, setConfirmJobApplyVisible ] = useState(false);
     const [userSkills, setUserSkills] = useState(route.params.skills);
@@ -42,11 +42,10 @@ const RestaurantScreen = ({ navigation, route }) => {
             const jobList = jobSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
             setJobs(jobList);
-            
 
         };
         fetchJobs();
-        userInfoFetch(); // Fetch relationship data when component mounts
+        userInfoFetch(); 
 
     }, [balance]);
 
@@ -363,4 +362,4 @@ const styles = StyleSheet.create({
 });
 
 
-export default RestaurantScreen;
+export default WorkScreen;
