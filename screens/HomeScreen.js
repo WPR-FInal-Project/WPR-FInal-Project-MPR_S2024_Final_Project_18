@@ -87,10 +87,8 @@ const HomeScreen = ({ navigation, route }) => {
           setSkills([]);
           const user = await getUser();
           setCurrentUser(user);
-          console.log("currentUser:", currentUser);
 
           // Add console.log to check the value of currentUser.age
-          console.log("currentUser.age:", currentUser.age);
           setAge(user.age);
           setBalance(user.balance);
           setHealth(user.health);
@@ -116,6 +114,7 @@ const HomeScreen = ({ navigation, route }) => {
           setHealth(user.health);
           setHappiness(user.happiness);
           setLoading(false);
+          setSkills(user.skills);
           // setHouse(user.house);
           // setJob(user.job);
         }
@@ -124,7 +123,7 @@ const HomeScreen = ({ navigation, route }) => {
 
     // update age every 12 minutes
     useEffect(() => {
-      const duration =  12 * 60 * 1000; // 1 minute in milliseconds
+      const duration =  12 * 1 * 1000; // 1 minute in milliseconds
       const intervalTime = 100; // Update frequency in milliseconds
       const steps = duration / intervalTime; // Total number of steps
       let step = 0; // Current step
@@ -176,14 +175,14 @@ const HomeScreen = ({ navigation, route }) => {
         setHouse(house);
         setJob(job);
         setSalary(job.salary);
-        
+        setHealthImpact(job.health_impact);
         // Add new skills to the skills array
       };
     }
       fetchData();
     }, [currentUser]);
     useEffect(() => {
-      const duration = 60 * 1000; // 1 minute in milliseconds
+      const duration = 10 * 1000; // 1 minute in milliseconds
       const intervalTime = 1000; // Update frequency in milliseconds
       const steps = duration / intervalTime; // Total number of steps
       let step = 0; // Current step
@@ -226,8 +225,8 @@ const HomeScreen = ({ navigation, route }) => {
         return docSnap.data();
       } else {
         // docSnap.data() will be undefined in this case
-        docSnap = await getDoc(usersDocRef)
-      }
+        console.log("No such document!");}
+        await getDoc(usersDocRef)
     }
 
     // function to get skill data from firestore by skillId
@@ -282,15 +281,15 @@ const HomeScreen = ({ navigation, route }) => {
     };
 
     // function to skip to age 5
-    const skipToFive = () => {
+    const skipToFive = async () => {
       if (age < 5){
-        updateDoc(doc(db, 'users', uid), { age: 5 });
+        await updateDoc(doc(db, 'users', uid), { age: 5 });
         setAge(5);
       }
     }
     
-    const handleReset = () => {
-      updateDoc(doc(db, 'users', uid), {
+    const handleReset = async () => {
+      await updateDoc(doc(db, 'users', uid), {
             balance: 0,
             age: 0,
             skills: [],
@@ -300,7 +299,7 @@ const HomeScreen = ({ navigation, route }) => {
             relationship: [0,0,0],
             house: 0
       });
-      setAge(0)
+      setAge(0);
     }
 
     const handleReachEighteen = async () => {
@@ -385,7 +384,9 @@ const HomeScreen = ({ navigation, route }) => {
                 </View>
 
                 <View style={styles.building}>
-                  <Pressable onPress={() => navigation.navigate('RentalHouse')}
+                  <Pressable 
+                  disabled={age < 18}
+                  onPress={() => navigation.navigate('RentalHouse', {uid: uid})}
                     style={{height: "100%", width: 180}} />
                   <Pressable onPress={() => navigation.navigate('Work', {uid: uid, skills: skills})}
                   disabled={age < 18}

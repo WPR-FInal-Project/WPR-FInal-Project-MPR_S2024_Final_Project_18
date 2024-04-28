@@ -40,10 +40,6 @@ const RentalHouseScreen = ({ navigation, route }) => {
             const houseSnapshot = await getDocs(houseCollection);
             const houseList = houseSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
             setHouses(houseList);
-            console.log('Houses fetched successfully:', houseList[1])
-            console.log('Houses fetched successfully:', houseList[2])
-
-            console.log('Houses fetched successfully:', houseList[3])
 
         };
         fetchHouses();
@@ -132,6 +128,7 @@ const RentalHouseScreen = ({ navigation, route }) => {
             confirmFunction={() => handleRentHouse(houseId)}
             houseTitle={houseTitle}
             price={price}
+            balance={balance}
             health={healthImpact}
             happiness={happinessImpact}
             
@@ -178,8 +175,8 @@ const RentalHouseScreen = ({ navigation, route }) => {
                     return (
                     <ButtonOrange
                         key={house.id}
+                        disabled={false}
                         onPress={() => {
-                            console.log(house.title)
                             toggleConfirmHouseModalVisible();
                             setHouseTitle(house.title);
                             setHouseId(house.id);
@@ -200,7 +197,9 @@ const RentalHouseScreen = ({ navigation, route }) => {
                             setHouseId(houses[0].id);
                             setPrice(houses[0].rental_rate);
                             setHappinessImpact(houses[0].happiness_impact);
-                            setHealthImpact(houses[0].health_impact)}}>
+                            setHealthImpact(houses[0].health_impact)}}
+                            disabled={false}
+                            >
                         <Text style={{color: 'white', fontSize: 25, fontFamily: 'Itim_400Regular'}}>Homeless</Text>
                     </ButtonOrange>
                 </View>

@@ -4,7 +4,7 @@ import { View, Pressable, StyleSheet, Text } from 'react-native';
 import Modal from "react-native-modal";
 import { useFonts, Itim_400Regular } from '@expo-google-fonts/itim';
 import ButtonOrange from './ButtonOrange';
-const ConfirmHouseModal = ({ isVisible, toggleFunction, confirmFunction, price, houseTitle, health, happiness }) => {
+const ConfirmHouseModal = ({ isVisible, toggleFunction, confirmFunction, price, houseTitle, health, happiness, balance }) => {
   let [fontsLoaded] = useFonts({
     Itim_400Regular,
   });
@@ -39,7 +39,7 @@ return (
                   <ButtonOrange onPress={() => {
                     confirmFunction();
                     toggleFunction()
-                  }} disabled={false}>
+                  }} disabled={balance < price}>
                     <Text style={{color: 'white', fontSize: 30, fontFamily: 'Itim_400Regular'}}>Yes</Text>
 
                   </ButtonOrange>     

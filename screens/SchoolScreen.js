@@ -214,7 +214,7 @@ const SchoolScreen = ({ navigation, route }) => {
                     <View>      
                         {age < 18 && (
                             <>
-                            <View style={{flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginBottom: 20}}>
+                            <View style={{flexDirection: 'row',alignSelf: 'center', alignItems: 'center',width: 330, justifyContent: 'center', marginBottom: 20}}>
                             <Text style={{color: '#51330B', fontSize: 30, fontFamily: 'Itim_400Regular'}}>Get </Text>
 
                                 <ButtonOrange disabled={false} onPress={selectQuestion}>
@@ -225,6 +225,8 @@ const SchoolScreen = ({ navigation, route }) => {
                                 <View style={{flexDirection:'column', alignItems: 'center',height: 400, padding: 10, borderColor: "#3B2105",
                                 borderWidth: 4, borderRadius: 6}}>
                                     <View style={[styles.textContainer,{flex: 1}]}>
+                                        <Text style={[styles.text, {marginBottom: 30}]}>{currentSubject.name}</Text>
+
                                         <Text style={styles.text}>{currentQuestion.question}</Text>
                                     </View>
                                         <View style={{flexDirection: 'row'}}>
@@ -280,12 +282,10 @@ const styles = StyleSheet.create({
     },
     textContainer: {
         backgroundColor: '#51330B',
-        justifyContent: 'center',
         padding: 20,
         borderRadius: 10,
         width: 330,
         alignItems: 'center',
-        justifyContent: 'center',
       },
       userInfoContainer: {
         flexDirection: 'column',
