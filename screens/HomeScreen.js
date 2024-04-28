@@ -123,7 +123,7 @@ const HomeScreen = ({ navigation, route }) => {
 
     // update age every 12 minutes
     useEffect(() => {
-      const duration =  12 * 1 * 1000; // 1 minute in milliseconds
+      const duration =  12 * 60 * 1000; // 1 minute in milliseconds
       const intervalTime = 100; // Update frequency in milliseconds
       const steps = duration / intervalTime; // Total number of steps
       let step = 0; // Current step
@@ -182,7 +182,7 @@ const HomeScreen = ({ navigation, route }) => {
       fetchData();
     }, [currentUser]);
     useEffect(() => {
-      const duration = 10 * 1000; // 1 minute in milliseconds
+      const duration = 60 * 1000; // 1 minute in milliseconds
       const intervalTime = 1000; // Update frequency in milliseconds
       const steps = duration / intervalTime; // Total number of steps
       let step = 0; // Current step
